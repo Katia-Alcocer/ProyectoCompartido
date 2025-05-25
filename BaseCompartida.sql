@@ -69,3 +69,47 @@ Sexo Enum('H','M') not null,
 idDomicilio int foreign key references Domicilios(idDomicilio)
 );
 
+CREATE TABLE Clientes (
+    idCliente INT AUTO_INCREMENT PRIMARY KEY,
+    Credito DECIMAL(10,2) NOT NULL,
+    Limite DECIMAL(10,2) NOT NULL,
+    idPersona INT NOT NULL,
+    idHerrero INT NOT NULL,
+    idDomicilio INT NOT NULL,
+    
+    CONSTRAINT chk_Limite_Credito CHECK (Limite <= Credito),
+    
+    CONSTRAINT fk_Clientes_Personas FOREIGN KEY (idPersona)
+        REFERENCES Personas(idPersona)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    CONSTRAINT fk_Clientes_Herreros FOREIGN KEY (idHerrero)
+        REFERENCES Herreros(idHerrero)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE,
+
+    CONSTRAINT fk_Clientes_Domicilios FOREIGN KEY (idDomicilio)
+        REFERENCES Domicilios(idDomicilio)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+
+CREATE TABLE Empleados (
+    idEmpleado INT AUTO_INCREMENT PRIMARY KEY,
+    Puesto ENUM('Administrador', 'Cajero', 'Agente de Venta') NOT NULL,
+    RFC VARCHAR(13) NOT NULL,
+    NumeroSeguroSocial VARCHAR(11) NOT NULL,
+    Usuario VARCHAR(255) NOT NULL UNIQUE,
+    Contraseña VARCHAR(255) NOT NULL,
+    idPersona INT NOT NULL,
+
+    CONSTRAINT fk_Empleados_Personas FOREIGN KEY (idPersona)
+        REFERENCES Personas(idPersona)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    CONSTRAINT chk_Correo_Valido CHECK (Usuario LIKE '%_@__%.__%')
+);
+
