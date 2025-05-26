@@ -1,1 +1,7 @@
-Inicio
+--Base de Datos
+--Vistas
+--Procedimintos Almacenados
+--Funcion 
+--Triggers
+--Impresiones PDF
+--Transacciones
