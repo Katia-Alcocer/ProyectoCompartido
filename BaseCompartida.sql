@@ -149,5 +149,28 @@ CREATE TABLE Descuentos (
     Categoria VARCHAR(100) NOT NULL,
     Porcentaje DECIMAL(5,2) NOT NULL CHECK (Porcentaje BETWEEN 0 AND 100)
 );
+CREATE TABLE Ventas (
+    idVenta INT AUTO_INCREMENT PRIMARY KEY,
+    Monto DECIMAL(10,2) NOT NULL,
+    Fecha DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    Subtotal DECIMAL(10,2) NOT NULL,
+    IVA DECIMAL(10,2) NOT NULL,
+    IEPS DECIMAL(10,2) NOT NULL,
+    CantidadProductos INT NOT NULL CHECK (CantidadProductos > 0),
+    TipoPago ENUM('Contado', 'Cheque', 'Transferencia', 'Credito') NOT NULL,
+    Estatus ENUM('Cancelada', 'Pagada', 'En Espera de Pago') NOT NULL DEFAULT 'En Espera de Pago',
+    idCliente INT NOT NULL,
+    idEmpleado INT NOT NULL,
+
+    CONSTRAINT fk_Ventas_Clientes FOREIGN KEY (idCliente)
+        REFERENCES Clientes(idCliente)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE,
+
+    CONSTRAINT fk_Ventas_Empleados FOREIGN KEY (idEmpleado)
+        REFERENCES Empleados(idEmpleado)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE
+);
 
 
