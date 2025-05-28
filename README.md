@@ -52,7 +52,7 @@
 
 --Triggers
 1. trg_promocion_existencia_baja
-2. trg_promocion_fecha_caducidad
+2. trg_promocion_fecha_caducidad --Este no creo que nos sirva ya que estamos trabajando con productos que no tienen caducidad
 3. verificar_credito_cliente
 4. VerificarVentaProducto
 5. AuditoriaProductoUpdate
