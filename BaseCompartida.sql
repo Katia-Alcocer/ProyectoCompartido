@@ -101,8 +101,8 @@ CREATE TABLE Clientes (
 CREATE TABLE Empleados (
     idEmpleado INT AUTO_INCREMENT PRIMARY KEY,
     Puesto ENUM('Administrador', 'Cajero', 'Agente de Venta') NOT NULL,
-    RFC VARCHAR(13) NOT NULL,
-    NumeroSeguroSocial VARCHAR(11) NOT NULL,
+    RFC VARCHAR(13) NOT NULL UNIQUE,
+    NumeroSeguroSocial VARCHAR(11) NOT NULL UNIQUE,
     Usuario VARCHAR(255) NOT NULL UNIQUE,
     Contraseña VARCHAR(255) NOT NULL,
     idPersona INT NOT NULL,
@@ -112,6 +112,45 @@ CREATE TABLE Empleados (
         ON DELETE CASCADE
         ON UPDATE CASCADE,
 
-    CONSTRAINT chk_Correo_Valido CHECK (Usuario LIKE '%_@__%.__%')
+    CONSTRAINT chk_Correo_Valido CHECK (Usuario LIKE '%_@__%.__%')--Revisa que si tenga el formato de un correo electronico
 );
+
+CREATE TABLE Productos (
+    idProducto INT AUTO_INCREMENT PRIMARY KEY,
+    Nombre VARCHAR(100) NOT NULL,
+    PrecioCompra DECIMAL(10,2) NOT NULL,
+    PrecioVenta DECIMAL(10,2) NOT NULL,
+    Stock INT NOT NULL DEFAULT 0,
+    FechaCaducidad DATE,
+    Estado ENUM('Activo', 'Inactivo') NOT NULL DEFAULT 'Activo',
+    idCategoria INT NOT NULL,
+    idProveedor INT NOT NULL,
+
+    CONSTRAINT fk_Productos_Categorias FOREIGN KEY (idCategoria)
+        REFERENCES Categorias(idCategoria)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE,
+
+    CONSTRAINT fk_Productos_Proveedores FOREIGN KEY (idProveedor)
+        REFERENCES Proveedores(idProveedor)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE,
+
+    CONSTRAINT chk_Precios CHECK (PrecioVenta >= PrecioCompra),
+    CONSTRAINT chk_Stock CHECK (Stock >= 0)
+);
+CREATE TABLE Proveedores (
+    idProveedor INT AUTO_INCREMENT PRIMARY KEY,
+    Nombre VARCHAR(100) NOT NULL
+);
+CREATE TABLE Categorias (
+    idCategoria INT AUTO_INCREMENT PRIMARY KEY,
+    Nombre VARCHAR(100) NOT NULL UNIQUE
+);
+CREATE TABLE Descuentos (
+    idHerrero INT AUTO_INCREMENT PRIMARY KEY,
+    Categoria VARCHAR(100) NOT NULL,
+    Porcentaje DECIMAL(5,2) NOT NULL CHECK (Porcentaje BETWEEN 0 AND 100)
+);
+
 
