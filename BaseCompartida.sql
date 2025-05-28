@@ -220,3 +220,54 @@ CREATE TABLE HistorialModificaciones (
         ON DELETE RESTRICT
         ON UPDATE CASCADE
 );
+
+CREATE TABLE Finanzas (
+    idFinanza INT AUTO_INCREMENT PRIMARY KEY,
+    idVenta INT NOT NULL,
+    TotalVenta DECIMAL(10,2) NOT NULL,
+    Invertido DECIMAL(10,2) NOT NULL,
+    Ganancia DECIMAL(10,2) GENERATED ALWAYS AS (TotalVenta - Invertido) STORED,
+
+    CONSTRAINT fk_Finanzas_Ventas FOREIGN KEY (idVenta)
+        REFERENCES Ventas(idVenta)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE
+);
+
+CREATE TABLE Pedidos (
+    idPedido INT AUTO_INCREMENT PRIMARY KEY,
+    Fecha DATE NOT NULL DEFAULT (CURRENT_DATE),
+    Hora TIME NOT NULL DEFAULT (CURRENT_TIME),
+    Estatus ENUM('Pendiente', 'Procesado', 'Enviado', 'Entregado', 'Cancelado') NOT NULL DEFAULT 'Pendiente',
+    idCliente INT NOT NULL,
+    idEmpleado INT,
+
+    CONSTRAINT fk_Pedidos_Clientes FOREIGN KEY (idCliente)
+        REFERENCES Clientes(idCliente)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE,
+
+    CONSTRAINT fk_Pedidos_Empleados FOREIGN KEY (idEmpleado)
+        REFERENCES Empleados(idEmpleado)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE
+);
+
+CREATE TABLE DetallePedidos (
+    idDetallePedido INT AUTO_INCREMENT PRIMARY KEY,
+    idPedido INT NOT NULL,
+    idProducto INT NOT NULL,
+    Cantidad INT NOT NULL CHECK (Cantidad > 0),
+    PrecioUnitario DECIMAL(10,2) NOT NULL,
+    Subtotal DECIMAL(10,2) GENERATED ALWAYS AS (Cantidad * PrecioUnitario) STORED,
+
+    CONSTRAINT fk_DetallePedidos_Pedidos FOREIGN KEY (idPedido)
+        REFERENCES Pedidos(idPedido)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    CONSTRAINT fk_DetallePedidos_Productos FOREIGN KEY (idProducto)
+        REFERENCES Productos(idProducto)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE
+);
