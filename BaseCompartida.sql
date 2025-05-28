@@ -49,27 +49,29 @@ CREATE TABLE CodigosPostales (
     c_tipo_asenta INT NOT NULL,
     FOREIGN KEY (c_tipo_asenta) REFERENCES Asentamiento(c_tipo_asenta)
 );
+
 CREATE TABLE Domicilios(
-idDomicilio int not null auto_increment primary key,
-Calle varchar(50) not null,
-Numero int not null,
-c_CP int not null,
-Foreign Key (c_CP) REFERENCES CodigosPostales(c_CP)
+    idDomicilio int not null auto_increment primary key,
+    Calle varchar(50) not null,
+    Numero int not null,
+    c_CP int not null,
+    Foreign Key (c_CP) REFERENCES CodigosPostales(c_CP)
 );
+
 CREATE TABLE Personas (
-idPersona int not null auto_increment primary key,
-Nombre varchar(50) not null,
-Paterno varchar(50) not null,
-Materno varchar(50) not null,
-Telefono varchar(10) not null UNIQUE,
-Email varchar(50) not null UNIQUE,
-Edad smallint not null check (Edad >0 and Edad<100),
-Sexo Enum('H','M') not null,
-idDomicilio int,
- CONSTRAINT fk_Clientes_Domicilios FOREIGN KEY (idDomicilio)
-        REFERENCES Domicilios(idDomicilio)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
+    idPersona int not null auto_increment primary key,
+    Nombre varchar(50) not null,
+    Paterno varchar(50) not null,
+    Materno varchar(50) not null,
+    Telefono varchar(10) not null UNIQUE,
+    Email varchar(50) not null UNIQUE,
+    Edad smallint not null check (Edad >0 and Edad<100),
+    Sexo Enum('H','M') not null,
+    idDomicilio int,
+    CONSTRAINT fk_Clientes_Domicilios FOREIGN KEY (idDomicilio)
+            REFERENCES Domicilios(idDomicilio)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE
 );
 
 CREATE TABLE Descuentos (
@@ -124,6 +126,7 @@ CREATE TABLE Proveedores (
     idProveedor INT AUTO_INCREMENT PRIMARY KEY,
     Nombre VARCHAR(100) NOT NULL
 );
+
 CREATE TABLE Categorias (
     idCategoria INT AUTO_INCREMENT PRIMARY KEY,
     Nombre VARCHAR(100) NOT NULL UNIQUE
