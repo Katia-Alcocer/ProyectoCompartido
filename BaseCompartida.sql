@@ -173,4 +173,29 @@ CREATE TABLE Ventas (
         ON UPDATE CASCADE
 );
 
+CREATE TABLE DetalleVenta (
+    idDetalleVenta INT AUTO_INCREMENT PRIMARY KEY,
+    Cantidad INT NOT NULL CHECK (Cantidad > 0),
+    Total DECIMAL(10,2) NOT NULL,
+    IVA DECIMAL(10,2) NOT NULL,
+    IEPS DECIMAL(10,2) NOT NULL,
+    idVenta INT NOT NULL,
+    idProducto INT NOT NULL,
+    idHerrero INT,
+
+    CONSTRAINT fk_DetalleVenta_Ventas FOREIGN KEY (idVenta)
+        REFERENCES Ventas(idVenta)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    CONSTRAINT fk_DetalleVenta_Productos FOREIGN KEY (idProducto)
+        REFERENCES Productos(idProducto)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE,
+
+    CONSTRAINT fk_DetalleVenta_Descuentos FOREIGN KEY (idHerrero)
+        REFERENCES Descuentos(idHerrero)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE
+);
 
