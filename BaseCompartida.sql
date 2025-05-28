@@ -1,13 +1,6 @@
 Create DATABASE HerreriaUG;
 
 -- Tablas de la base de datos
-<<<<<<< HEAD
--- ========================
---Tan inge que si puede hacer cambios
---Hola pute
-=======
-
->>>>>>> 833c837ece5dda5bcacfb10a8e3b43782c8a213a
 CREATE TABLE Pais (
     id_Pais INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     Nombre VARCHAR(100) NOT NULL UNIQUE
