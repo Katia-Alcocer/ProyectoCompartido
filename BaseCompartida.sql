@@ -65,7 +65,17 @@ Telefono varchar(10) not null UNIQUE,
 Email varchar(50) not null UNIQUE,
 Edad smallint not null check (Edad >0 and Edad<100),
 Sexo Enum('H','M') not null,
-idDomicilio int foreign key references Domicilios(idDomicilio)
+idDomicilio int,
+ CONSTRAINT fk_Clientes_Domicilios FOREIGN KEY (idDomicilio)
+        REFERENCES Domicilios(idDomicilio)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+CREATE TABLE Descuentos (
+    idDescuento INT AUTO_INCREMENT PRIMARY KEY,--Seran los Herreros
+    Categoria VARCHAR(100) NOT NULL,
+    Porcentaje DECIMAL(5,2) NOT NULL CHECK (Porcentaje BETWEEN 0 AND 100)
 );
 
 CREATE TABLE Clientes (
@@ -73,8 +83,8 @@ CREATE TABLE Clientes (
     Credito DECIMAL(10,2) NOT NULL,
     Limite DECIMAL(10,2) NOT NULL,
     idPersona INT NOT NULL,
-    idHerrero INT NOT NULL,
-    idDomicilio INT NOT NULL,
+    idDescuento INT NOT NULL,
+    
     
     CONSTRAINT chk_Limite_Credito CHECK (Limite <= Credito),
     
@@ -83,15 +93,12 @@ CREATE TABLE Clientes (
         ON DELETE CASCADE
         ON UPDATE CASCADE,
 
-    CONSTRAINT fk_Clientes_Herreros FOREIGN KEY (idHerrero)
-        REFERENCES Herreros(idHerrero)
+    CONSTRAINT fk_Clientes_Herreros FOREIGN KEY (idDescuento)
+        REFERENCES Descuentos(idDescuento)
         ON DELETE SET NULL
         ON UPDATE CASCADE,
 
-    CONSTRAINT fk_Clientes_Domicilios FOREIGN KEY (idDomicilio)
-        REFERENCES Domicilios(idDomicilio)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
+   
 );
 
 
@@ -110,6 +117,16 @@ CREATE TABLE Empleados (
         ON UPDATE CASCADE,
 
     CONSTRAINT chk_Correo_Valido CHECK (Usuario LIKE '%_@__%.__%')--Revisa que si tenga el formato de un correo electronico
+);
+
+
+CREATE TABLE Proveedores (
+    idProveedor INT AUTO_INCREMENT PRIMARY KEY,
+    Nombre VARCHAR(100) NOT NULL
+);
+CREATE TABLE Categorias (
+    idCategoria INT AUTO_INCREMENT PRIMARY KEY,
+    Nombre VARCHAR(100) NOT NULL UNIQUE
 );
 
 CREATE TABLE Productos (
@@ -136,19 +153,7 @@ CREATE TABLE Productos (
     CONSTRAINT chk_Precios CHECK (PrecioVenta >= PrecioCompra),
     CONSTRAINT chk_Stock CHECK (Stock >= 0)
 );
-CREATE TABLE Proveedores (
-    idProveedor INT AUTO_INCREMENT PRIMARY KEY,
-    Nombre VARCHAR(100) NOT NULL
-);
-CREATE TABLE Categorias (
-    idCategoria INT AUTO_INCREMENT PRIMARY KEY,
-    Nombre VARCHAR(100) NOT NULL UNIQUE
-);
-CREATE TABLE Descuentos (
-    idHerrero INT AUTO_INCREMENT PRIMARY KEY,
-    Categoria VARCHAR(100) NOT NULL,
-    Porcentaje DECIMAL(5,2) NOT NULL CHECK (Porcentaje BETWEEN 0 AND 100)
-);
+
 CREATE TABLE Ventas (
     idVenta INT AUTO_INCREMENT PRIMARY KEY,
     Monto DECIMAL(10,2) NOT NULL,
@@ -181,7 +186,7 @@ CREATE TABLE DetalleVenta (
     IEPS DECIMAL(10,2) NOT NULL,
     idVenta INT NOT NULL,
     idProducto INT NOT NULL,
-    idHerrero INT,
+    idDescuento INT,
 
     CONSTRAINT fk_DetalleVenta_Ventas FOREIGN KEY (idVenta)
         REFERENCES Ventas(idVenta)
@@ -193,8 +198,8 @@ CREATE TABLE DetalleVenta (
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
 
-    CONSTRAINT fk_DetalleVenta_Descuentos FOREIGN KEY (idHerrero)
-        REFERENCES Descuentos(idHerrero)
+    CONSTRAINT fk_DetalleVenta_Descuentos FOREIGN KEY (idDescuento)
+        REFERENCES Descuentos(idDescuento)
         ON DELETE SET NULL
         ON UPDATE CASCADE
 );
