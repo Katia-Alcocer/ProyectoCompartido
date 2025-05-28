@@ -199,3 +199,24 @@ CREATE TABLE DetalleVenta (
         ON UPDATE CASCADE
 );
 
+CREATE TABLE Temp_Ventas (
+    idProducto INT NOT NULL,
+    Cantidad INT NOT NULL CHECK (Cantidad > 0)
+);
+
+CREATE TABLE HistorialModificaciones (
+    idHistorial INT AUTO_INCREMENT PRIMARY KEY,
+    Movimiento ENUM('Modificacion', 'Eliminacion') NOT NULL,
+    TablaAfectada VARCHAR(100) NOT NULL,
+    ColumnaAfectada VARCHAR(100) NOT NULL,
+    DatoAnterior TEXT,
+    DatoNuevo TEXT,
+    Fecha DATE NOT NULL DEFAULT (CURRENT_DATE),
+    Hora TIME NOT NULL DEFAULT (CURRENT_TIME),
+    idEmpleado INT NOT NULL,
+
+    CONSTRAINT fk_Historial_Empleados FOREIGN KEY (idEmpleado)
+        REFERENCES Empleados(idEmpleado)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE
+);
