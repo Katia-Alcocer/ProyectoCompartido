@@ -10,7 +10,7 @@
 7. VistaPedidosPendientes --Caja y Administrativo
 8. VistaPedidosRecibidos --Caja y Administrativo
 9. VistaProductosConDescuentos --Agente de ventas(AV)
-10. sp_ObtenerCarritoPorEmpleado 
+10. VistaObtenerCarritoPorEmpleado 
 
 --Procedimintos Almacenados
 1. sp_CalcularPrecioConPromocion
@@ -62,10 +62,9 @@
 1. Ticket de Venta 
 2. Reporte de Ventas Diarias
 3. Estado de Inventario
-4. Reporte de Recargas por Día
-5. Reporte de Pedidos Pendientes / Recibidos
-6. Lista de Clientes Activos
-7. Lista de Empleados Activos
-8. Lista de Proveedores Activos
+4. Reporte de Pedidos Pendientes / Recibidos
+5. Lista de Clientes Activos
+6. Lista de Empleados Activos
+7. Lista de Proveedores Activos
 
 --Transacciones
