@@ -46,18 +46,17 @@
 
 --Triggers
 1. trg_promocion_existencia_baja
-2. trg_promocion_fecha_caducidad --Este no creo que nos sirva ya que estamos trabajando con productos que no tienen caducidad
-3. verificar_credito_cliente
-4. VerificarVentaProducto
-5. AuditoriaProductoUpdate
-6. before_insert_producto
-7. before_update_producto
-8. before_delete_empleado
-9. before_update_pedido
-10. after_insert_venta
-11. after_delete_producto
-12. after_update_empleado
-13. after_insert_venta_clear_carrito
+2. verificar_credito_cliente
+3. VerificarVentaProducto
+4. AuditoriaProductoUpdate
+5. before_insert_producto
+6. before_update_producto
+7. before_delete_empleado
+8. before_update_pedido
+9. after_insert_venta
+10. after_delete_producto
+11. after_update_empleado
+12. after_insert_venta_clear_carrito
 
 --Impresiones PDF
 1. Ticket de Venta 
