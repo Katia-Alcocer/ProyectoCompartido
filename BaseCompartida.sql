@@ -207,8 +207,16 @@ CREATE TABLE DetalleVenta (
 );
 
 CREATE TABLE Temp_Ventas (
+    idEmpleado INT NOT NULL,
     idProducto INT NOT NULL,
-    Cantidad INT NOT NULL CHECK (Cantidad > 0)
+    Cantidad INT NOT NULL CHECK (Cantidad > 0),
+    PRIMARY KEY (idEmpleado, idProducto),
+    FOREIGN KEY (idEmpleado) REFERENCES Empleados(idEmpleado)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    FOREIGN KEY (idProducto) REFERENCES Productos(idProducto)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE
 );
 
 CREATE TABLE HistorialModificaciones (
@@ -245,7 +253,7 @@ CREATE TABLE Pedidos (
     idPedido INT AUTO_INCREMENT PRIMARY KEY,
     Fecha DATE NOT NULL DEFAULT (CURRENT_DATE),
     Hora TIME NOT NULL DEFAULT (CURRENT_TIME),
-    Estatus ENUM('Pendiente', 'Procesado', 'Enviado', 'Entregado', 'Cancelado') NOT NULL DEFAULT 'Pendiente',
+    Estatus ENUM('Pendiente', 'Aceptado', 'Enviado', 'Cancelado') NOT NULL DEFAULT 'Pendiente',
     idCliente INT NOT NULL,
     idEmpleado INT,
 
