@@ -1,5 +1,7 @@
 Create DATABASE HerreriaUG;
 
+USE HerreriaUG;
+
 -- Tablas de la base de datos
 CREATE TABLE Pais (
     id_Pais INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
