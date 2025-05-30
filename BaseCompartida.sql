@@ -138,7 +138,6 @@ CREATE TABLE Productos (
     PrecioCompra DECIMAL(10,2) NOT NULL,
     PrecioVenta DECIMAL(10,2) NOT NULL,
     Stock INT NOT NULL DEFAULT 0,
-    FechaCaducidad DATE,
     Estado ENUM('Activo', 'Inactivo') NOT NULL DEFAULT 'Activo',
     idCategoria INT NOT NULL,
     idProveedor INT NOT NULL,
