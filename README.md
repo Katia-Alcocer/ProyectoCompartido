@@ -45,18 +45,18 @@
 3. InsertarCliente --Checar que el cliente no haya existido antes
 
 --Triggers
-1. trg_promocion_existencia_baja
-2. verificar_credito_cliente
+1. PromocionExistenciaBaja
+2. VerificarCreditoCliente
 3. VerificarVentaProducto
 4. AuditoriaProductoUpdate
-5. before_insert_producto
-6. before_update_producto
-7. before_delete_empleado
-8. before_update_pedido
-9. after_insert_venta
-10. after_delete_producto
-11. after_update_empleado
-12. after_insert_venta_clear_carrito
+5. BeforeInsertProducto
+6. BeforeUpdateProducto
+7. BeforeDeleteEmpleado
+8. BeforeUpdatePedido
+9. AfterInsertVenta
+10. AfterDeleteProducto
+11. AfterUpdateEmpleado
+12. AfterInsertVentaClearCarrito
 
 --Impresiones PDF
 1. Ticket de Venta 
