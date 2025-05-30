@@ -69,6 +69,7 @@ CREATE TABLE Personas (
     Email varchar(50) not null UNIQUE,
     Edad smallint not null check (Edad >0 and Edad<100),
     Sexo Enum('H','M') not null,
+    Estatus ENUM('Activo','Inactivo') NOT NULL DEFAULT 'Activo';
     idDomicilio int,
     CONSTRAINT fk_Clientes_Domicilios FOREIGN KEY (idDomicilio)
             REFERENCES Domicilios(idDomicilio)
@@ -77,7 +78,7 @@ CREATE TABLE Personas (
 );
 
 CREATE TABLE Descuentos (
-    idDescuento INT AUTO_INCREMENT PRIMARY KEY,--Seran los Herreros
+    idDescuento INT AUTO_INCREMENT PRIMARY KEY,
     Categoria VARCHAR(100) NOT NULL,
     Porcentaje DECIMAL(5,2) NOT NULL CHECK (Porcentaje BETWEEN 0 AND 100)
 );
