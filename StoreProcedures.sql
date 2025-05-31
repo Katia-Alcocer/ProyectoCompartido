@@ -60,7 +60,7 @@ CREATE PROCEDURE BuscarProductoPorNombre (
     IN p_nombre VARCHAR(100)
 )
 BEGIN
-    SELECT * FROM Producto
+    SELECT * FROM Productos
     WHERE nombre LIKE CONCAT('%', p_nombre, '%') AND estatus = 'Activo';
 END$$
 
@@ -68,7 +68,7 @@ CREATE PROCEDURE BuscarProductoPorCodigoBarras (
     IN p_codigo_barras VARCHAR(50)
 )
 BEGIN
-    SELECT * FROM Producto
+    SELECT * FROM Productos
     WHERE codigo_barras = p_codigo_barras AND estatus = 'Activo';
 END$$
 
