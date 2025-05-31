@@ -557,3 +557,140 @@ BEGIN
 END //
 
 DELIMITER ;
+
+
+DELIMITER //
+
+CREATE PROCEDURE RegistrarEmpleado(
+    IN p_Nombre VARCHAR(50),
+    IN p_Paterno VARCHAR(50),
+    IN p_Materno VARCHAR(50),
+    IN p_Telefono VARCHAR(10),
+    IN p_Email VARCHAR(50),
+    IN p_Edad SMALLINT,
+    IN p_Sexo ENUM('H', 'M'),
+    IN p_Calle VARCHAR(50),
+    IN p_Numero INT,
+    IN p_c_CP INT,
+    IN p_RFC VARCHAR(13),
+    IN p_CURP VARCHAR(18),
+    IN p_NumeroSeguro VARCHAR(11),
+    IN p_Usuario VARCHAR(50),
+    IN p_Contrasena VARCHAR(50)
+)
+BEGIN
+    DECLARE v_idDomicilio INT;
+    DECLARE v_idPersona INT;
+    DECLARE v_idEmpleado INT;
+
+    -- Manejador de errores
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Error al registrar el empleado. No se pueden agregar con datos ya registrados en el sistema.';
+    END;
+
+    -- Validación previa: Teléfono o Email ya existen
+    IF EXISTS (
+        SELECT 1 FROM Personas WHERE Telefono = p_Telefono OR Email = p_Email
+    ) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Teléfono o Email ya registrados';
+    END IF;
+
+    -- Validación previa: Usuario ya existe
+    IF EXISTS (
+        SELECT 1 FROM Empleados WHERE Usuario = p_Usuario
+    ) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Usuario ya registrado';
+    END IF;
+
+    START TRANSACTION;
+
+        -- Insertar domicilio
+        INSERT INTO Domicilios (Calle, Numero, c_CP)
+        VALUES (p_Calle, p_Numero, p_c_CP);
+        SET v_idDomicilio = LAST_INSERT_ID();
+
+        -- Insertar persona
+        INSERT INTO Personas (Nombre, Paterno, Materno, Telefono, Email, Edad, Sexo, idDomicilio)
+        VALUES (p_Nombre, p_Paterno, p_Materno, p_Telefono, p_Email, p_Edad, p_Sexo, v_idDomicilio);
+        SET v_idPersona = LAST_INSERT_ID();
+
+        -- Insertar empleado
+        INSERT INTO Empleados (Puesto, RFC, NumeroSeguroSocial, Usuario, Contraseña, idPersona)
+        VALUES ('Agente de Venta', p_RFC, p_NumeroSeguro, p_Usuario, p_Contrasena, v_idPersona);
+        SET v_idEmpleado = LAST_INSERT_ID();
+
+    COMMIT;
+END //
+
+DELIMITER ;
+
+DELIMITER //
+
+CREATE PROCEDURE RegistrarCliente(
+    IN p_Calle VARCHAR(50),
+    IN p_Numero INT,
+    IN p_c_CP INT,
+
+    IN p_Nombre VARCHAR(50),
+    IN p_Paterno VARCHAR(50),
+    IN p_Materno VARCHAR(50),
+    IN p_Telefono VARCHAR(10),
+    IN p_Email VARCHAR(50),
+    IN p_Edad SMALLINT,
+    IN p_Sexo ENUM('H', 'M'),
+
+    IN p_Credito DECIMAL(10,2),
+    IN p_Limite DECIMAL(10,2),
+    IN p_idDescuento INT
+)
+BEGIN
+    DECLARE v_idDomicilio INT;
+    DECLARE v_idPersona INT;
+    DECLARE v_idCliente INT;
+    DECLARE v_error_text TEXT;
+    DECLARE v_error_code INT;
+    DECLARE v_mensaje_error TEXT;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        GET DIAGNOSTICS CONDITION 1 v_error_code = MYSQL_ERRNO, v_error_text = MESSAGE_TEXT;
+        SET v_mensaje_error = CONCAT('Error [', v_error_code, ']: ', v_error_text);
+        ROLLBACK;
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = v_mensaje_error;
+    END;
+
+    -- Verificar si ya existe la persona
+    IF EXISTS (
+        SELECT 1 FROM Personas
+        WHERE TRIM(Telefono) = TRIM(p_Telefono)
+           OR LOWER(TRIM(Email)) = LOWER(TRIM(p_Email))
+    ) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Ya existe una persona con ese teléfono o email.';
+    END IF;
+
+    START TRANSACTION;
+
+    -- Insertar domicilio
+    INSERT INTO Domicilios (Calle, Numero, c_CP)
+    VALUES (p_Calle, p_Numero, p_c_CP);
+    SET v_idDomicilio = LAST_INSERT_ID();
+
+    -- Insertar persona
+    INSERT INTO Personas (Nombre, Paterno, Materno, Telefono, Email, Edad, Sexo, idDomicilio)
+    VALUES (p_Nombre, p_Paterno, p_Materno, p_Telefono, p_Email, p_Edad, p_Sexo, v_idDomicilio);
+    SET v_idPersona = LAST_INSERT_ID();
+
+    -- Insertar cliente
+    INSERT INTO Clientes (Credito, Limite, idPersona, idDescuento)
+    VALUES (p_Credito, p_Limite, v_idPersona, p_idDescuento);
+    SET v_idCliente = LAST_INSERT_ID();
+
+    COMMIT;
+END;
+//
+
+DELIMITER ;
