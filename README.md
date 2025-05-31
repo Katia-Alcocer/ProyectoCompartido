@@ -23,9 +23,11 @@ SELECT * FROM VistaClientesInactivos;
 
 
 
-8. VistaPedidosPendientes -- Solo muestra los pedidos que tiene estatus de Pendiente -------
+8. VistaPedidosPendientes -- Solo muestra los pedidos que tiene estatus de Pendiente ***************
+SELECT * FROM vistapedidospendientes;
 
-9. VistaPedidosAceptados -- Solo muetra los pedidos que tiene estatus de aceptados -----------
+9. VistaPedidosAceptados -- Solo muetra los pedidos que tiene estatus de aceptados ***************
+SELECT * FROM vistapedidosaceptados;
 
 10. VistaPedidosEnviados -- Solo muetra los pedidos que tienen estatus de enviados -----------
 
