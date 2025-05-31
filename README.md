@@ -16,31 +16,35 @@
 11. VistaObtenerCarritoPorEmpleado -- Muestra los productos del carrito temporal por empleado
 
 --Procedimintos Almacenados
-1. sp_CalcularPrecioConPromocion
-2. sp_AgregarProducto_Completo
-3. sp_ActualizarProducto_Completo
-4. sp_EliminarProducto
-5. sp_BuscarProductoPorNombre
-6. sp_BuscarProductoPorCodigoBarras
-7. sp_ActualizarEmpleado  
-8. sp_CambiarEstadoEmpleado --Este igual que el anterior 
-8. sp_ActualizarCliente --Tambien solo administradores 
-9. sp_CambiarEstadoCliente --Aministradores
-10. sp_AgregarProveedor --Solo administradores 
-11. EditarProveedor --Solo administradores(SA)
-12. sp_CambiarEstadoProveedor --SA
-13. sp_RegistrarPedidoCompleto 
-14. sp_AgregarOActualizarProductoPedido
-15. sp_CambiarEstadoPedido --SA
-16. sp_RegistrarRecarga
-17. sp_AgregarAlCarrito
-18. sp_SumarCantidadProductoCarrito
-19. sp_RestarCantidadProductoCarrito
-20. sp_LimpiarCarritoPorEmpleado
-21. sp_RegistrarVentaCompleta
-22. DevolverProductoIndividual
-23. DevolverVentaCompleta
-24. DevolverProductoConDescuento
+1. AgregarProducto
+2. ActualizarProductoCompleto
+3. EliminarProducto -- Solo cambia estatus a inactivo
+4. BuscarProductoPorNombre
+5. BuscarProductoPorCodigoBarras
+
+6. AgergarEmpelado
+7. ActualizarEmpleado  
+8. EliminarEmpleado -- Solo cambia estatus a inactivo
+
+9. AgregarCliente
+10. EliminarCliente -- Solo cambia estatus a inactivo
+11. ActualizarClientes
+
+12. AgergarProveedor
+13. EliminaProveedor -- Solo cambia estatus a inactivo 
+
+14. RegistrarPedido
+15. CambiaPedidoAceptado -- Solo cambia estatus a Aceptado
+16. CambiaPedidoEnviado --Solo cambia estatus a enviado
+
+17. AgregarAlCarrito
+18. SumarCantidadProductoCarrito -- Que no se pueda sumar mas producto del que existe en stock
+19. RestarCantidadProductoCarrito -- Si al estar restando llega a 0 que se elimine del Tem_Venta
+
+20. ProcesarUnaVenta -- Haver la venta en la tabla venta y detalle venta
+
+22. DevolverProductoIndividual -- Devulve un producto seleccionado suma nuevamnete los productos al stock
+23. DevolverVentaCompleta -- Devulev una venta comleta y suma los productos nuevamente al stock
 
 --Funcion 
 1. ObtenerPrecioCliente, aqui hay que checar tambien que el cliente si pertenezca al agente de venta que esta checando por que cada agente tendra a sus propios clientes 

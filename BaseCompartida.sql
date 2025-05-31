@@ -91,7 +91,7 @@ CREATE TABLE Clientes (
     idDescuento INT NOT NULL,
     
     
-    CONSTRAINT chk_Limite_Credito CHECK (Limite <= Credito),
+    CONSTRAINT chk_Limite_Credito CHECK (Credito <= Limite),
     
     CONSTRAINT fk_Clientes_Personas FOREIGN KEY (idPersona)
         REFERENCES Personas(idPersona)
@@ -140,6 +140,7 @@ CREATE TABLE Productos (
     Nombre VARCHAR(100) NOT NULL,
     PrecioCompra DECIMAL(10,2) NOT NULL,
     PrecioVenta DECIMAL(10,2) NOT NULL,
+    CodigoBarras BIGINT,
     Stock INT NOT NULL DEFAULT 0,
     Estado ENUM('Activo', 'Inactivo') NOT NULL DEFAULT 'Activo',
     idCategoria INT NOT NULL,
@@ -224,7 +225,7 @@ CREATE TABLE Temp_Ventas (
 
 CREATE TABLE HistorialModificaciones (
     idHistorial INT AUTO_INCREMENT PRIMARY KEY,
-    Movimiento ENUM('Modificacion', 'Eliminacion') NOT NULL,
+    Movimiento VARCHAR(50),
     TablaAfectada VARCHAR(100) NOT NULL,
     ColumnaAfectada VARCHAR(100) NOT NULL,
     DatoAnterior TEXT,
