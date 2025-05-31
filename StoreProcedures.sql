@@ -526,3 +526,26 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+DELIMITER //
+
+CREATE PROCEDURE InsertarDomicilioPorID(
+    IN p_Calle VARCHAR(50),
+    IN p_Numero INT,
+    IN p_c_CP INT
+)
+BEGIN
+    -- Verificar si el c_CP existe en la tabla CodigosPostales
+    IF EXISTS (
+        SELECT 1 FROM CodigosPostales WHERE c_CP = p_c_CP
+    ) THEN
+        -- Insertar en la tabla Domicilios
+        INSERT INTO Domicilios (Calle, Numero, c_CP)
+        VALUES (p_Calle, p_Numero, p_c_CP);
+    ELSE
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El c_CP proporcionado no existe.';
+    END IF;
+END //
+
+DELIMITER ;

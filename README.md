@@ -1,5 +1,6 @@
 --Base de Datos
-
+0 ****************** = Realizado y Funcionando al 100% 
+Favor de poner abajo de cada uno como es que se corre y si ocupa entrar con la secion
 --Vistas
 1. VistaVentasDiarias -- Esta vista separa las ventas por empleado y por dia 
 2. VistaArticuloSimplificado -- Solo muestra Nobre, cantidad y presio de un producto
@@ -14,6 +15,13 @@
 10. VistaPedidosEnviados -- Solo muetra los pedidos que tienen estatus de enviados 
 
 11. VistaObtenerCarritoPorEmpleado -- Muestra los productos del carrito temporal por empleado
+
+12. - Vista Acentamiento por CP --Despliega todos los asentamientos que pertenecen a un CP ***************
+-- Con estas instrucciones se corre --
+SELECT * 
+FROM Vista_AsentamientosPorCP 
+WHERE CodigoPostal = '37000';
+--
 
 --Procedimintos Almacenados
 1. AgregarProducto
@@ -45,6 +53,10 @@
 
 22. DevolverProductoIndividual -- Devulve un producto seleccionado suma nuevamnete los productos al stock
 23. DevolverVentaCompleta -- Devulev una venta comleta y suma los productos nuevamente al stock
+
+24.  InsertarDomicilioPorID --Guarda en la tabla domiciliod el id de el domicilio dependiendo el que seleccione el usuario ***************
+CALL InsertarDomicilioPorID('Av. Universidad', 789, 5);
+
 
 --Funcion 
 1. ObtenerPrecioCliente, aqui hay que checar tambien que el cliente si pertenezca al agente de venta que esta checando por que cada agente tendra a sus propios clientes 

@@ -146,3 +146,16 @@ SELECT
 FROM Temp_Ventas t
 JOIN Productos p ON t.idProducto = p.idProducto;
 
+
+
+CREATE VIEW Vista_AsentamientosPorCP AS
+SELECT 
+    cp.c_CP,
+    cp.d_codigo AS CodigoPostal,
+    a.d_asenta AS Asentamiento,
+    a.d_tipo_asenta AS TipoAsentamiento
+FROM 
+    CodigosPostales cp
+JOIN 
+    Asentamiento a ON cp.c_tipo_asenta = a.c_tipo_asenta;
+--
