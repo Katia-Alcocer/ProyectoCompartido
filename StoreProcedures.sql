@@ -54,6 +54,16 @@ BEGIN
     WHERE idProducto = p_idProducto;
 END$$
 
+CREATE PROCEDURE RecuperarProducto (
+    IN p_idProducto INT
+)
+BEGIN
+    UPDATE Productos
+    SET Estado = 'Activo'
+    WHERE idProducto = p_idProducto;
+END$$
+
+
 -- Metodos de Busqueda
 
 CREATE PROCEDURE BuscarProductoPorNombre (
@@ -170,6 +180,22 @@ BEGIN
     WHERE idPersona = persona_id;
 END$$
 
+CREATE PROCEDURE RecuperarEmpleado (
+    IN p_idEmpleado INT
+)
+BEGIN
+    DECLARE persona_id INT;
+
+    SELECT idPersona INTO persona_id
+    FROM Empleados
+    WHERE idEmpleado = p_idEmpleado;
+
+    UPDATE Personas
+    SET Estatus = 'Activo'
+    WHERE idPersona = persona_id;
+END$$
+
+
 
 --
 
@@ -263,6 +289,23 @@ BEGIN
     SET Estatus = 'Inactivo'
     WHERE idPersona = persona_id;
 END$$
+
+CREATE PROCEDURE RecuperarCliente (
+    IN p_idCliente INT
+)
+BEGIN
+    DECLARE persona_id INT;
+
+    SELECT idPersona INTO persona_id
+    FROM Clientes
+    WHERE idCliente = p_idCliente;
+
+    -- Recuperación lógica en Personas
+    UPDATE Personas
+    SET Estatus = 'Activo'
+    WHERE idPersona = persona_id;
+END$$
+
 
 --
 
