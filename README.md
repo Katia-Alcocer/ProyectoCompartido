@@ -66,6 +66,7 @@
 13. after_insert_recarga
 14. after_insert_venta_clear_carrito
 
+
 --Impresiones PDF
 1. Ticket de Venta 
 2. Reporte de Ventas Diarias
