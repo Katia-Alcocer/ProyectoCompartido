@@ -31,7 +31,7 @@ SELECT * FROM vistapedidospendientes;
 ✅️ 9. VistaPedidosAceptados -- Solo muetra los pedidos que tiene estatus de aceptados 
 SELECT * FROM vistapedidosaceptados;
 
-10. VistaPedidosEnviados -- Solo muetra los pedidos que tienen estatus de enviados 
+✅️10. VistaPedidosEnviados -- Solo muetra los pedidos que tienen estatus de enviados 
 
 ✅️ 11. VistaObtenerCarritoPorEmpleado -- Muestra los productos del carrito temporal por empleado 
 
