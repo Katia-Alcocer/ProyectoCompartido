@@ -1,4 +1,3 @@
-
 -- Procedimientos Almacenados 
 
 DELIMITER $$
@@ -119,13 +118,12 @@ CREATE PROCEDURE ActualizarEmpleado (
     IN p_Telefono VARCHAR(10),
     IN p_Email VARCHAR(50),
     IN p_Edad SMALLINT,
-    IN p_Sexo ENUM('H','M'),
+    IN p_Sexo CHAR(1),  -- Cambiado de ENUM a CHAR(1)
     IN p_idDomicilio INT,
     IN p_Puesto ENUM('Administrador', 'Cajero', 'Agente de Venta'),
     IN p_RFC VARCHAR(13),
     IN p_NumeroSeguroSocial VARCHAR(11),
-    IN p_Usuario VARCHAR(255),
-    IN p_Contrasena VARCHAR(255)
+    IN p_Usuario VARCHAR(255)
 )
 BEGIN
     DECLARE persona_id INT;
@@ -147,13 +145,12 @@ BEGIN
         idDomicilio = p_idDomicilio
     WHERE idPersona = persona_id;
 
-    -- Actualizar en Empleados
+    -- Actualizar en Empleados (sin contraseña)
     UPDATE Empleados
     SET Puesto = p_Puesto,
         RFC = p_RFC,
         NumeroSeguroSocial = p_NumeroSeguroSocial,
-        Usuario = p_Usuario,
-        Contraseña = p_Contrasena
+        Usuario = p_Usuario
     WHERE idEmpleado = p_idEmpleado;
 END$$
 
@@ -273,8 +270,8 @@ CREATE PROCEDURE AgregarProveedor (
     IN p_nombre VARCHAR(100)
 )
 BEGIN
-    INSERT INTO Proveedores (Nombre, Estado)
-    VALUES (p_nombre, 'Activo');
+    INSERT INTO Proveedores (Nombre)
+    VALUES (p_nombre);
 END$$
 
 CREATE PROCEDURE EliminarProveedor (
@@ -288,13 +285,11 @@ END$$
 
 CREATE PROCEDURE ActualizarProveedor (
     IN p_id_proveedor INT,
-    IN p_nombre VARCHAR(100),
-    IN p_estado ENUM('Activo', 'Inactivo')
+    IN p_nombre VARCHAR(100)
 )
 BEGIN
     UPDATE Proveedores
-    SET Nombre = p_nombre,
-        Estado = p_estado
+    SET Nombre = p_nombre
     WHERE idProveedor = p_id_proveedor;
 END$$
 
@@ -414,12 +409,16 @@ BEGIN
     DECLARE v_monto DECIMAL(10,2);
     DECLARE v_cantidad_productos INT;
     DECLARE v_id_venta INT;
+    DECLARE v_cliente INT;
+
+    -- Asignar cliente: si no es válido, asignar 0 (cliente genérico)
+    SET v_cliente = IF(p_id_cliente IS NULL OR p_id_cliente <= 0, 0, p_id_cliente);
 
     -- Calcular subtotal, IVA, IEPS y cantidad de productos sumados
     SELECT 
-        SUM(p.Precio * t.Cantidad),
-        SUM(p.Precio * t.Cantidad * 0.16), -- Ejemplo IVA 16%
-        SUM(p.Precio * t.Cantidad * 0.08), -- Ejemplo IEPS 8%
+        SUM(p.PrecioVenta * t.Cantidad),
+        SUM(p.PrecioVenta * t.Cantidad * 0.16), -- Ejemplo IVA 16%
+        SUM(p.PrecioVenta * t.Cantidad * 0.08), -- Ejemplo IEPS 8%
         SUM(t.Cantidad)
     INTO 
         v_subtotal, v_iva, v_ieps, v_cantidad_productos
@@ -433,7 +432,7 @@ BEGIN
     INSERT INTO Ventas (Monto, Fecha, Subtotal, IVA, IEPS, CantidadProductos, TipoPago, Estatus, idCliente, idEmpleado)
     VALUES (v_monto, NOW(), v_subtotal, v_iva, v_ieps, v_cantidad_productos, p_tipo_pago, 
         CASE WHEN p_tipo_pago = 'Credito' THEN 'En Espera de Pago' ELSE 'Pagada' END, 
-        p_id_cliente, p_id_empleado);
+        v_cliente, p_id_empleado);
 
     SET v_id_venta = LAST_INSERT_ID();
 
@@ -441,9 +440,9 @@ BEGIN
     INSERT INTO DetalleVenta (Cantidad, Total, IVA, IEPS, idVenta, idProducto, idDescuento)
     SELECT 
         t.Cantidad,
-        p.Precio * t.Cantidad,
-        p.Precio * t.Cantidad * 0.16, -- IVA
-        p.Precio * t.Cantidad * 0.08, -- IEPS
+        p.PrecioVenta * t.Cantidad,
+        p.PrecioVenta * t.Cantidad * 0.16, -- IVA
+        p.PrecioVenta * t.Cantidad * 0.08, -- IEPS
         v_id_venta,
         t.idProducto,
         NULL -- Puedes agregar lógica para descuentos si quieres
@@ -525,9 +524,18 @@ BEGIN
     DELETE FROM Ventas WHERE idVenta = p_idVenta;
 END$$
 
-DELIMITER ;
-
-DELIMITER //
+CREATE PROCEDURE sp_ObtenerCarritoPorEmpleado(IN empleadoId INT)
+BEGIN
+    SELECT 
+        tv.idProducto,
+        p.Nombre,
+        tv.Cantidad,
+        p.PrecioVenta,
+        (p.PrecioVenta * tv.Cantidad) AS Total
+    FROM Temp_Ventas tv
+    INNER JOIN Productos p ON tv.idProducto = p.idProducto
+    WHERE tv.idEmpleado = empleadoId;
+END $$
 
 CREATE PROCEDURE InsertarDomicilioPorID(
     IN p_Calle VARCHAR(50),
