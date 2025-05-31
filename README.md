@@ -1,80 +1,98 @@
 --Base de Datos
 
 --Vistas
-1. Vista_VentasDiarias
-2. Vista_ArticuloSimplificado
-3. VistaEmpleadosActivos
-4. VistaEstadoInventario
-5. vista_recargas_por_dia
-6. VistaClientesActivos
-7. VistaProveedoresActivos
-8. VistaProveedoresPorDia--Esta considero que devemos quitarla para no complicarnosla
-9. VistaPedidosPendientes
-10. VistaPedidosRecibidos
-11. Mostrar precios de productos con descuentos -- Este por que los agentes de venta pueden ver los precios de los productos pero solamente de los que le tocan al cliente con el que esten
+1. VistaVentasDiarias -- Esta vista separa las ventas por empleado y por dia 
+2. VistaArticuloSimplificado -- Solo muestra Nobre, cantidad y presio de un producto
+3. VistaEmpleadosActivos -- Solo muetra los empleados con es estatus de activo
+4. VistaEmpleadosInactivos -- Solo muetra los empleados con es estatus de activo
+5. VistaEstadoInventario -- Muestra la informacion del inventario 
+6. VistaClientesActivos -- Solo muetra los clientes con es estatus de activo
+7. VistaClientesInactivo -- Solo muetra los clientes con es estatus de activo
+
+8. VistaPedidosPendientes -- Solo muestra los pedidos que tiene estatus de Pendiente
+9. VistaPedidosAceptados -- Solo muetra los pedidos que tiene estatus de aceptados 
+10. VistaPedidosEnviados -- Solo muetra los pedidos que tienen estatus de enviados 
+
+11. VistaObtenerCarritoPorEmpleado -- Muestra los productos del carrito temporal por empleado
 
 --Procedimintos Almacenados
-1. sp_CalcularPrecioConPromocion
-2. sp_CalcularPrecioConDescuentoEmpleado--Este no aplica en nuestro caso entonces no es necesario
-3. sp_AgregarProducto_Completo
-4. sp_ActualizarProducto_Completo
-5. sp_EliminarProducto
-6. sp_BuscarProductoPorNombre
-7. sp_BuscarProductoPorCodigoBarras
-8. InsertarEmpleado --Esto hay que hacerlo con una funcion para usar transacciones ya que tenemos que alterar la tabla personas y empleados 
+1. AgregarProducto
+2. ActualizarProductoCompleto
+3. EliminarProducto -- Solo cambia estatus a inactivo
+4. BuscarProductoPorNombre
+5. BuscarProductoPorCodigoBarras
 
-9. sp_ActualizarEmpleado --Esta hay que ponerle que solo puedan hacerlo si es administrador y que guarde los cambios en la tabla de historiales 
-10. sp_CambiarEstadoEmpleado --Este igual que el anterior 
+6. AgergarEmpelado
+7. ActualizarEmpleado  
+8. EliminarEmpleado -- Solo cambia estatus a inactivo
 
-11. InsertarCliente --Esto tambien solo lo pueden hacer los administradores, y tenemos que checar que el cliente no haya existido antes, Tambien hay que hacerlo con una funcion para usar transacciones 
+9. AgregarCliente
+10. EliminarCliente -- Solo cambia estatus a inactivo
+11. ActualizarClientes
 
-12. sp_ActualizarCliente --Tambien solo administradores 
-13. sp_CambiarEstadoCliente --Aministradores
-14. sp_AgregarProveedor --Solo administradores 
-15. EditarProveedor --Solo administradores(SA)
-16. sp_CambiarEstadoProveedor --SA
-17. sp_RegistrarPedidoCompleto 
-18. sp_AgregarOActualizarProductoPedido
-19. sp_CambiarEstadoPedido --SA
-20. sp_RegistrarRecarga
-21. sp_AgregarAlCarrito
-22. sp_ObtenerCarritoPorEmpleado --Esto lompodemos implementar como vista y pienso que seria mejor 
-23. sp_SumarCantidadProductoCarrito
-24. sp_RestarCantidadProductoCarrito
-25. sp_LimpiarCarritoPorEmpleado
-26. sp_RegistrarVentaCompleta
-27. DevolverProductoIndividual
-28. DevolverVentaCompleta
-29. DevolverProductoConDescuento
+12. AgergarProveedor
+13. EliminaProveedor -- Solo cambia estatus a inactivo 
+
+14. RegistrarPedido
+15. CambiaPedidoAceptado -- Solo cambia estatus a Aceptado
+16. CambiaPedidoEnviado --Solo cambia estatus a enviado
+
+17. AgregarAlCarrito
+18. SumarCantidadProductoCarrito -- Que no se pueda sumar mas producto del que existe en stock
+19. RestarCantidadProductoCarrito -- Si al estar restando llega a 0 que se elimine del Tem_Venta
+
+20. ProcesarUnaVenta -- Haver la venta en la tabla venta y detalle venta
+
+22. DevolverProductoIndividual -- Devulve un producto seleccionado suma nuevamnete los productos al stock
+23. DevolverVentaCompleta -- Devulev una venta comleta y suma los productos nuevamente al stock
 
 --Funcion 
 1. ObtenerPrecioCliente, aqui hay que checar tambien que el cliente si pertenezca al agente de venta que esta checando por que cada agente tendra a sus propios clientes 
+2. InsertarEmpleado 
+3. InsertarCliente --Checar que el cliente no haya existido antes
 
 --Triggers
-1. trg_promocion_existencia_baja
-2. trg_promocion_fecha_caducidad --Este no creo que nos sirva ya que estamos trabajando con productos que no tienen caducidad
-3. verificar_credito_cliente
-4. VerificarVentaProducto
-5. AuditoriaProductoUpdate
-6. before_insert_producto
-7. before_update_producto
-8. before_delete_empleado
-9. before_update_pedido
-10. after_insert_venta
-11. after_delete_producto
-12. after_update_empleado
-13. after_insert_recarga
-14. after_insert_venta_clear_carrito
+1. PromocionExistenciaBaja -- Cuando un producto tiene baja existencia crea una promocio con un descuento 15% de descuento
+2. VerificarCreditoClienteBefore --Antes de hgacer una venta a credito verifica que el credito disponble del clinte si cubra lo que planea comprar 
+3. VerificarVentaProducto
+
+4. ProductoUpdateAuditoriaAfter
+5. ProductoDeleteAuditoriaAfter
+6. ProductoInsertAuditoriaAfter
+
+7. EmpleadosUpdateAuditoriaAfter
+8. EmpleadosDeleteAuditoriaAfter
+9. EmpleadosInsertAuditoriaAfte
+
+10. ClienteUpdateAuditoriaAfter
+11. ClienteDeleteAuditoriaAfter
+12. ClienteInsertAuditoriaAfter
+
+13. EmpleadoUpdateBefore
+14. EmpleadoInsertBefore
+
+15. ProductoUpdateBefore -- No permote que la cantida del stock sea 0 y que el precio de venta sea menor que el de compra
+16. ProductoInsertBefore -- No permote que la cantida del stock sea 0 y que el precio de venta sea menor que el de compra
+
+17. ClienteUpdateBefore -- No permite que la cantidad de credito supere el limite de credito 
+18. ClienteInsertBefore -- No permite que la cantidad de credito supere el limite de credito 
+
+19. InsertVentaClearCarritoAfter -- Que solo lo limpie por empleado
+
+20. VentaCantidadBefore -- No permite hacer una venta si exede la existencia del producto
+
+21. DevolucionCantidadBefore -- No permitedevolucion mas de lo vendido
+
+22. DescontarCantidadDespuesDeVenta -- Descuenta la cantidad del producto vendido despues de porcesar la venta 
+
 
 
 --Impresiones PDF
 1. Ticket de Venta 
 2. Reporte de Ventas Diarias
 3. Estado de Inventario
-4. Reporte de Recargas por Día
-5. Reporte de Pedidos Pendientes / Recibidos
-6. Lista de Clientes Activos
-7. Lista de Empleados Activos
-8. Lista de Proveedores Activos
+4. Reporte de Pedidos Pendientes / Recibidos
+5. Lista de Clientes Activos
+6. Lista de Empleados Activos
 
 --Transacciones
