@@ -82,8 +82,7 @@ CALL InsertarDomicilioPorID('Av. Universidad', 789, 5);
 
 --Funcion 
 1. ObtenerPrecioCliente, aqui hay que checar tambien que el cliente si pertenezca al agente de venta que esta checando por que cada agente tendra a sus propios clientes 
-2. InsertarEmpleado 
-3. InsertarCliente --Checar que el cliente no haya existido antes
+
 
 --Triggers
 ✅️ 2. VerificarCreditoClienteBefore --Antes de hgacer una venta a credito verifica que el credito disponble del clinte si cubra lo que planea comprar 
@@ -104,8 +103,8 @@ CALL InsertarDomicilioPorID('Av. Universidad', 789, 5);
 ✅️ 13. EmpleadoUpdateBefore
 ✅️ 14. EmpleadoInsertBefore
 
-✅️ 15. ProductoUpdateBefore -- No permote que la cantida del stock sea 0 y que el precio de venta sea menor que el de compra
-✅️ 16. ProductoInsertBefore -- No permote que la cantida del stock sea 0 y que el precio de venta sea menor que el de compra
+✅️ 15. ProductoUpdateBefore -- No permite que la cantida del stock sea 0 y que el precio de venta sea menor que el de compra
+✅️ 16. ProductoInsertBefore -- No permite que la cantida del stock sea 0 y que el precio de venta sea menor que el de compra
 
 ✅️ 17. ClienteUpdateBefore -- No permite que la cantidad de credito supere el limite de credito 
 ✅️ 18. ClienteInsertBefore -- No permite que la cantidad de credito supere el limite de credito 
@@ -117,6 +116,34 @@ CALL InsertarDomicilioPorID('Av. Universidad', 789, 5);
 21. DevolucionCantidadBefore -- No permitedevolucion mas de lo vendido
 
 22. DescontarCantidadDespuesDeVenta -- Descuenta la cantidad del producto vendido despues de porcesar la venta 
+
+✅️23. Agregar Clientes --Verifica que no existan registros previos
+CALL RegistrarCliente(
+    'Av. Reforma', 120, 1,
+    'Carlos', 'Ramírez', 'López', '5566778899', 'carlos@example.com', 30, 'H',
+    1000.00, 5000.00, 1
+);
+
+
+✅️24. RegistrarEmpleado --Verifica que no exista otro registro con los mismos datos 
+CALL RegistrarEmpleado(
+    'Carlos',           -- Nombre
+    'Pérez',            -- Paterno
+    'Hernández',        -- Materno
+    '4771234567',       -- Teléfono
+    'carlos@example.com', -- Email
+    35,                 -- Edad
+    'H',                -- Sexo
+    'Av. Insurgentes',  -- Calle
+    102,                -- Número
+    1,                  -- c_CP (Código postal válido)
+    'PEHC850123GTA',    -- RFC
+    'PEHC850123HGTNRL01', -- CURP
+    '12345678901',      -- Número de Seguro Social
+    'carlos.perez',     -- Usuario
+    'segura123'         -- Contraseña
+);
+
 
 --Impresiones PDF
 ✅️ 1. Ticket de Venta 
