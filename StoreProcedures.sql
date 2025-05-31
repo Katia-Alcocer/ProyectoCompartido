@@ -563,8 +563,10 @@ BEGIN
     -- Eliminar todos los detalles de la venta
     DELETE FROM DetalleVenta WHERE idVenta = p_idVenta;
 
-    -- Eliminar la venta
-    DELETE FROM Ventas WHERE idVenta = p_idVenta;
+    -- Marcar la venta como devuelta en lugar de eliminarla
+    UPDATE Ventas
+    SET Estatus = 'Devuelta'
+    WHERE idVenta = p_idVenta;
 END$$
 
 CREATE PROCEDURE sp_ObtenerCarritoPorEmpleado(IN empleadoId INT)
