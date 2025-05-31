@@ -85,7 +85,7 @@ JOIN Personas p ON c.idPersona = p.idPersona
 WHERE p.Estatus = 'Activo';
 
 -- 7. VistaClientesInactivo
-CREATE OR REPLACE VIEW VistaClientesInactivos AS --Checar esta Katy, por la duda que te salio
+CREATE OR REPLACE VIEW VistaClientesInactivos AS 
 SELECT 
     c.idCliente,
     p.Nombre, p.Paterno, p.Materno,
