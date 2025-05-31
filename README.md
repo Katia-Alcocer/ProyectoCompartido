@@ -60,6 +60,7 @@ WHERE CodigoPostal = 'XXXXX';
 13. EliminaProveedor -- Solo cambia estatus a inactivo 
 
 14. RegistrarPedido
+
 15. CambiaPedidoAceptado -- Solo cambia estatus a Aceptado
 16. CambiaPedidoEnviado --Solo cambia estatus a enviado
 
