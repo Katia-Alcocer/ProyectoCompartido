@@ -1,5 +1,5 @@
 --Base de Datos
-0 ****************** = Realizado y Funcionando al 100% 
+ ****************** = Realizado y Funcionando al 100% 
 Favor de poner abajo de cada uno como es que se corre y si ocupa entrar con la secion
 --Vistas
 1. VistaVentasDiarias -- Esta vista separa las ventas por empleado y por dia 
