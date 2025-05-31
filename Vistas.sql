@@ -1,4 +1,3 @@
-
 -- Vistas
 -- 1. VistaVentasDiarias
 CREATE OR REPLACE VIEW VistaVentasDiarias AS
@@ -44,8 +43,18 @@ FROM Productos;
 CREATE OR REPLACE VIEW VistaEmpleadosActivos AS
 SELECT 
     e.idEmpleado,
-    p.Nombre, p.Paterno, p.Materno,
-    e.Puesto, e.Usuario
+    p.Nombre,
+    p.Paterno,
+    p.Materno,
+    p.Telefono,
+    p.Email,
+    p.Edad,
+    p.Sexo,
+    p.idDomicilio,
+    e.Puesto,
+    e.RFC,
+    e.NumeroSeguroSocial,
+    e.Usuario
 FROM Empleados e
 JOIN Personas p ON e.idPersona = p.idPersona
 WHERE p.Estatus = 'Activo';
@@ -54,15 +63,27 @@ WHERE p.Estatus = 'Activo';
 CREATE OR REPLACE VIEW VistaEmpleadosInactivos AS
 SELECT 
     e.idEmpleado,
-    p.Nombre, p.Paterno, p.Materno,
-    e.Puesto, e.Usuario
+    p.Nombre,
+    p.Paterno,
+    p.Materno,
+    p.Telefono,
+    p.Email,
+    p.Edad,
+    p.Sexo,
+    p.idDomicilio,
+    e.Puesto,
+    e.RFC,
+    e.NumeroSeguroSocial,
+    e.Usuario
 FROM Empleados e
 JOIN Personas p ON e.idPersona = p.idPersona
 WHERE p.Estatus = 'Inactivo';
 
+
 -- 5. VistaEstadoInventario
 CREATE OR REPLACE VIEW VistaEstadoInventario AS
 SELECT 
+    p.idProducto,
     p.Nombre AS Producto,
     c.Nombre AS Categoria,
     pr.Nombre AS Proveedor,
@@ -74,25 +95,34 @@ FROM Productos p
 JOIN Categorias c ON p.idCategoria = c.idCategoria
 JOIN Proveedores pr ON p.idProveedor = pr.idProveedor;
 
+
 -- 6. VistaClientesActivos
 CREATE OR REPLACE VIEW VistaClientesActivos AS
 SELECT 
     c.idCliente,
     p.Nombre, p.Paterno, p.Materno,
-    c.Credito, c.Limite
+    p.Email, p.Telefono,
+    c.Credito, c.Limite,
+    d.Categoria AS TipoCliente
 FROM Clientes c
 JOIN Personas p ON c.idPersona = p.idPersona
+LEFT JOIN Descuentos d ON c.idDescuento = d.idDescuento
 WHERE p.Estatus = 'Activo';
 
 -- 7. VistaClientesInactivo
-CREATE OR REPLACE VIEW VistaClientesInactivos AS 
+CREATE OR REPLACE VIEW VistaClientesInactivos AS
 SELECT 
     c.idCliente,
     p.Nombre, p.Paterno, p.Materno,
-    c.Credito, c.Limite
+    p.Email, p.Telefono,
+    c.Credito, c.Limite,
+    d.Categoria AS TipoCliente
 FROM Clientes c
 JOIN Personas p ON c.idPersona = p.idPersona
+LEFT JOIN Descuentos d ON c.idDescuento = d.idDescuento
 WHERE p.Estatus = 'Inactivo';
+
+
 
 -- 8. VistaPedidosPendientes
 CREATE OR REPLACE VIEW VistaPedidosPendientes AS
@@ -146,8 +176,13 @@ SELECT
 FROM Temp_Ventas t
 JOIN Productos p ON t.idProducto = p.idProducto;
 
+--12. VistaParaProveedores
+CREATE OR REPLACE VIEW Vista_Todos_Proveedores AS
+SELECT idProveedor, Nombre
+FROM Proveedores;
 
 
+--13. VistaAsentamientosPorCP
 CREATE VIEW Vista_AsentamientosPorCP AS
 SELECT 
     cp.c_CP,
@@ -158,4 +193,3 @@ FROM
     CodigosPostales cp
 JOIN 
     Asentamiento a ON cp.c_tipo_asenta = a.c_tipo_asenta;
---

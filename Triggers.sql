@@ -1,5 +1,8 @@
+session_start();
+$idEmpleado = $_SESSION['id'];
+$conexion->query("SET @id_empleado_sesion := $idEmpleado"); -- Sin esta parte te va a marcas errores por que bloqueo de los triggers
 
--- Triggers
+- Triggers
 DELIMITER $$
 -- 1. PromocionExistenciaBaja
 CREATE TRIGGER PromocionExistenciaBaja
@@ -123,6 +126,7 @@ END$$
 DELIMITER ;
 
 DELIMITER $$
+
 -- 7. EmpleadosUpdateAuditoriaAfter
 CREATE TRIGGER EmpleadosUpdateAuditoriaAfter
 AFTER UPDATE ON Empleados
@@ -185,6 +189,7 @@ DELIMITER ;
 
 
 DELIMITER $$
+
 -- 10. ClienteUpdateAuditoriaAfter
 CREATE TRIGGER ClienteUpdateAuditoriaAfter
 AFTER UPDATE ON Clientes
@@ -310,7 +315,6 @@ BEGIN
 END$$
 DELIMITER ;
 
-
 DELIMITER $$
 -- 19. AfterInsertVentaClearCarrito
 CREATE TRIGGER AfterInsertVentaClearCarrito
@@ -369,4 +373,3 @@ BEGIN
     WHERE idProducto = NEW.idProducto;
 END$$
 DELIMITER ;
-

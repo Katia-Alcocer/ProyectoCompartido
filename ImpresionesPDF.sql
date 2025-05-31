@@ -1,5 +1,3 @@
-
--- Impresiones PDF 
 --Para usar las impresiones debemos de instalar la librería DomPDF
 
 -- 1. Ticket de Venta 
