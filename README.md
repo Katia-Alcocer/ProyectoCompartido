@@ -85,6 +85,8 @@
 
 22. DescontarCantidadDespuesDeVenta -- Descuenta la cantidad del producto vendido despues de porcesar la venta 
 
+23. Revisar que se inserte un correo valido
+
 
 
 --Impresiones PDF
