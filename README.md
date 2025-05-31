@@ -1,40 +1,41 @@
 --Base de Datos
- ****************** = Realizado y Funcionando al 100% 
+ ✅️  = Realizado y Funcionando al 100% 
 Favor de poner abajo de cada uno como es que se corre y si ocupa entrar con la secion
---Vistas
-✅️ 1. VistaVentasDiarias -- Esta vista separa las ventas por empleado y por dia ----Revisar por que no muestra nada------
 
-✅️ 2. VistaArticuloSimplificado -- Solo muestra Nobre, cantidad y presio de un producto ***************
+--Vistas
+✅️ 1. VistaVentasDiarias -- Esta vista separa las ventas por empleado y por dia 
+
+✅️ 2. VistaArticuloSimplificado -- Solo muestra Nobre, cantidad y presio de un producto 
 SELECT * FROM vistaarticulosimplificado
 
-✅️ 3. VistaEmpleadosActivos -- Solo muetra los empleados con es estatus de activo ***************
+✅️ 3. VistaEmpleadosActivos -- Solo muetra los empleados con es estatus de activo 
 SELECT * FROM vistaempleadosactivos;
 
-✅️ 4. VistaEmpleadosInactivos -- Solo muetra los empleados con es estatus de inactivo ***************
+✅️ 4. VistaEmpleadosInactivos -- Solo muetra los empleados con es estatus de inactivo 
 SELECT * FROM vistaempleadosinactivos;
 
-✅️ 5. VistaEstadoInventario -- Muestra la informacion del inventario ***************
+✅️ 5. VistaEstadoInventario -- Muestra la informacion del inventario 
 
-✅️ 6. VistaClientesActivos -- Solo muetra los clientes con es estatus de activo ***************
+✅️ 6. VistaClientesActivos -- Solo muetra los clientes con es estatus de activo 
 SELECT * FROM vistaclientesactivos;
 
-✅️ 7. VistaClientesInactivo -- Solo muetra los clientes con es estatus de inactivo ***************
+✅️ 7. VistaClientesInactivo -- Solo muetra los clientes con es estatus de inactivo 
 SELECT * FROM VistaClientesInactivos;
 
 
 
-8. VistaPedidosPendientes -- Solo muestra los pedidos que tiene estatus de Pendiente ***************
+✅️ 8. VistaPedidosPendientes -- Solo muestra los pedidos que tiene estatus de Pendiente 
 SELECT * FROM vistapedidospendientes;
 
 
-9. VistaPedidosAceptados -- Solo muetra los pedidos que tiene estatus de aceptados ***************
+✅️ 9. VistaPedidosAceptados -- Solo muetra los pedidos que tiene estatus de aceptados 
 SELECT * FROM vistapedidosaceptados;
 
-10. VistaPedidosEnviados -- Solo muetra los pedidos que tienen estatus de enviados -----------
+10. VistaPedidosEnviados -- Solo muetra los pedidos que tienen estatus de enviados 
 
-✅️ 11. VistaObtenerCarritoPorEmpleado -- Muestra los productos del carrito temporal por empleado ---------
+✅️ 11. VistaObtenerCarritoPorEmpleado -- Muestra los productos del carrito temporal por empleado 
 
-12. - Vista Acentamiento por CP --Despliega todos los asentamientos que pertenecen a un CP ***************
+✅️ 12. - Vista Acentamiento por CP --Despliega todos los asentamientos que pertenecen a un CP 
 -- Con estas instrucciones se corre --
 SELECT * 
 FROM Vista_AsentamientosPorCP 
@@ -72,10 +73,10 @@ WHERE CodigoPostal = 'XXXXX';
 
 22. DevolverProductoIndividual -- Devulve un producto seleccionado suma nuevamnete los productos al stock
 
-23. DevolverVentaCompleta -- Devulev una venta comleta y suma los productos nuevamente al stock ***************
+✅️ 23. DevolverVentaCompleta -- Devulev una venta comleta y suma los productos nuevamente al stock 
 CALL DevolverVentaCompleta(idVenta);
 
-24.  InsertarDomicilioPorID --Guarda en la tabla domiciliod el id de el domicilio dependiendo el que seleccione el usuario ***************
+✅️ 24.  InsertarDomicilioPorID --Guarda en la tabla domiciliod el id de el domicilio dependiendo el que seleccione el usuario 
 CALL InsertarDomicilioPorID('Av. Universidad', 789, 5);
 
 
