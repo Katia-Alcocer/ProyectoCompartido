@@ -3,15 +3,25 @@
 Favor de poner abajo de cada uno como es que se corre y si ocupa entrar con la secion
 --Vistas
 1. VistaVentasDiarias -- Esta vista separa las ventas por empleado y por dia 
-2. VistaArticuloSimplificado -- Solo muestra Nobre, cantidad y presio de un producto
+
+2. VistaArticuloSimplificado -- Solo muestra Nobre, cantidad y presio de un producto***************
+SELECT * FROM vistaarticulosimplificado
+
 3. VistaEmpleadosActivos -- Solo muetra los empleados con es estatus de activo
+
 4. VistaEmpleadosInactivos -- Solo muetra los empleados con es estatus de activo
+
 5. VistaEstadoInventario -- Muestra la informacion del inventario 
+
 6. VistaClientesActivos -- Solo muetra los clientes con es estatus de activo
+
 7. VistaClientesInactivo -- Solo muetra los clientes con es estatus de activo
 
+
 8. VistaPedidosPendientes -- Solo muestra los pedidos que tiene estatus de Pendiente
+
 9. VistaPedidosAceptados -- Solo muetra los pedidos que tiene estatus de aceptados 
+
 10. VistaPedidosEnviados -- Solo muetra los pedidos que tienen estatus de enviados 
 
 11. VistaObtenerCarritoPorEmpleado -- Muestra los productos del carrito temporal por empleado
@@ -20,7 +30,7 @@ Favor de poner abajo de cada uno como es que se corre y si ocupa entrar con la s
 -- Con estas instrucciones se corre --
 SELECT * 
 FROM Vista_AsentamientosPorCP 
-WHERE CodigoPostal = '37000';
+WHERE CodigoPostal = 'XXXXX';
 --
 
 --Procedimintos Almacenados
