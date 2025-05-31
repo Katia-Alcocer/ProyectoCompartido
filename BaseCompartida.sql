@@ -69,7 +69,7 @@ CREATE TABLE Personas (
     Email varchar(50) not null UNIQUE,
     Edad smallint not null check (Edad >0 and Edad<100),
     Sexo Enum('H','M') not null,
-    Estatus ENUM('Activo','Inactivo') NOT NULL DEFAULT 'Activo';
+    Estatus ENUM('Activo','Inactivo') NOT NULL DEFAULT 'Activo',
     idDomicilio int,
     CONSTRAINT fk_Clientes_Domicilios FOREIGN KEY (idDomicilio)
             REFERENCES Domicilios(idDomicilio)
@@ -88,7 +88,7 @@ CREATE TABLE Clientes (
     Credito DECIMAL(10,2) NOT NULL,
     Limite DECIMAL(10,2) NOT NULL,
     idPersona INT NOT NULL,
-    idDescuento INT NOT NULL,
+    idDescuento INT,
     
     
     CONSTRAINT chk_Limite_Credito CHECK (Credito <= Limite),
@@ -101,7 +101,7 @@ CREATE TABLE Clientes (
     CONSTRAINT fk_Clientes_Herreros FOREIGN KEY (idDescuento)
         REFERENCES Descuentos(idDescuento)
         ON DELETE SET NULL
-        ON UPDATE CASCADE,
+        ON UPDATE CASCADE
 
    
 );
@@ -115,14 +115,13 @@ CREATE TABLE Empleados (
     Usuario VARCHAR(255) NOT NULL UNIQUE,
     Contraseña VARCHAR(255) NOT NULL,
     idPersona INT NOT NULL,
-
+    
     CONSTRAINT fk_Empleados_Personas FOREIGN KEY (idPersona)
         REFERENCES Personas(idPersona)
         ON DELETE CASCADE
-        ON UPDATE CASCADE,
-
-    CONSTRAINT chk_Correo_Valido CHECK (Usuario LIKE '%_@__%.__%')--Revisa que si tenga el formato de un correo electronico
+        ON UPDATE CASCADE
 );
+
 
 
 CREATE TABLE Proveedores (
