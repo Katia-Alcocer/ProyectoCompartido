@@ -127,6 +127,7 @@ CREATE TABLE Empleados (
 
 CREATE TABLE Proveedores (
     idProveedor INT AUTO_INCREMENT PRIMARY KEY,
+    Estado ENUM('Activo', 'Inactivo') NOT NULL DEFAULT 'Activo',
     Nombre VARCHAR(100) NOT NULL
 );
 
