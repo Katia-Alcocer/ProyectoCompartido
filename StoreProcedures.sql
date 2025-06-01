@@ -382,18 +382,22 @@ END$$
 --
 
 CREATE PROCEDURE AgregarAlCarrito (
-    IN p_id_empleado INT,
     IN p_id_producto INT,
     IN p_cantidad INT
 )
 BEGIN
     DECLARE v_stock INT;
+    DECLARE v_id_empleado INT;
 
+    -- Obtener el idEmpleado de la variable de sesión
+    SET v_id_empleado = @id_empleado_sesion;
+
+    -- Obtener el stock actual del producto
     SELECT stock INTO v_stock FROM Productos WHERE idProducto = p_id_producto;
 
     IF p_cantidad <= v_stock THEN
         INSERT INTO Temp_Ventas (idEmpleado, idProducto, Cantidad)
-        VALUES (p_id_empleado, p_id_producto, p_cantidad)
+        VALUES (v_id_empleado, p_id_producto, p_cantidad)
         ON DUPLICATE KEY UPDATE Cantidad = Cantidad + p_cantidad;
     END IF;
 END$$
@@ -452,7 +456,6 @@ BEGIN
     DECLARE v_cantidad_productos INT;
     DECLARE v_id_venta INT;
     DECLARE v_cliente INT;
-    DECLARE v_invertido DECIMAL(10,2);
 
     -- Asignar cliente: si no es válido, asignar 0 (cliente genérico)
     SET v_cliente = IF(p_id_cliente IS NULL OR p_id_cliente <= 0, 0, p_id_cliente);
@@ -470,14 +473,6 @@ BEGIN
     WHERE t.idEmpleado = p_id_empleado;
 
     SET v_monto = v_subtotal + v_iva + v_ieps;
-
-    -- Calcular el total invertido (precio compra * cantidad)
-    SELECT 
-        IFNULL(SUM(p.PrecioCompra * t.Cantidad), 0)
-    INTO v_invertido
-    FROM Temp_Ventas t
-    JOIN Productos p ON t.idProducto = p.idProducto
-    WHERE t.idEmpleado = p_id_empleado;
 
     -- Insertar la venta
     INSERT INTO Ventas (Monto, Fecha, Subtotal, IVA, IEPS, CantidadProductos, TipoPago, Estatus, idCliente, idEmpleado)
@@ -510,11 +505,10 @@ BEGIN
     -- Limpiar carrito
     DELETE FROM Temp_Ventas WHERE idEmpleado = p_id_empleado;
 
-    -- Insertar registro en Finanzas con el total invertido calculado
+    -- Insertar registro en Finanzas (invertido = 0 por simplificar, cambia según necesites)
     INSERT INTO Finanzas (idVenta, TotalVenta, Invertido)
-    VALUES (v_id_venta, v_monto, v_invertido);
+    VALUES (v_id_venta, v_monto, 0);
 END$$
-
 
 --
 
