@@ -316,6 +316,7 @@ END$$
 DELIMITER ;
 
 DELIMITER $$
+
 -- 19. AfterInsertVentaClearCarrito
 CREATE TRIGGER AfterInsertVentaClearCarrito
 AFTER INSERT ON Ventas

@@ -452,6 +452,7 @@ BEGIN
     DECLARE v_cantidad_productos INT;
     DECLARE v_id_venta INT;
     DECLARE v_cliente INT;
+    DECLARE v_invertido DECIMAL(10,2);
 
     -- Asignar cliente: si no es válido, asignar 0 (cliente genérico)
     SET v_cliente = IF(p_id_cliente IS NULL OR p_id_cliente <= 0, 0, p_id_cliente);
@@ -469,6 +470,14 @@ BEGIN
     WHERE t.idEmpleado = p_id_empleado;
 
     SET v_monto = v_subtotal + v_iva + v_ieps;
+
+    -- Calcular el total invertido (precio compra * cantidad)
+    SELECT 
+        IFNULL(SUM(p.PrecioCompra * t.Cantidad), 0)
+    INTO v_invertido
+    FROM Temp_Ventas t
+    JOIN Productos p ON t.idProducto = p.idProducto
+    WHERE t.idEmpleado = p_id_empleado;
 
     -- Insertar la venta
     INSERT INTO Ventas (Monto, Fecha, Subtotal, IVA, IEPS, CantidadProductos, TipoPago, Estatus, idCliente, idEmpleado)
@@ -492,19 +501,11 @@ BEGIN
     JOIN Productos p ON t.idProducto = p.idProducto
     WHERE t.idEmpleado = p_id_empleado;
 
-    -- Actualizar stock de productos
-    UPDATE Productos p
-    JOIN Temp_Ventas t ON p.idProducto = t.idProducto
-    SET p.Stock = p.Stock - t.Cantidad
-    WHERE t.idEmpleado = p_id_empleado;
-
-    -- Limpiar carrito
-    DELETE FROM Temp_Ventas WHERE idEmpleado = p_id_empleado;
-
-    -- Insertar registro en Finanzas (invertido = 0 por simplificar, cambia según necesites)
+    -- Insertar registro en Finanzas con el total invertido calculado
     INSERT INTO Finanzas (idVenta, TotalVenta, Invertido)
-    VALUES (v_id_venta, v_monto, 0);
+    VALUES (v_id_venta, v_monto, v_invertido);
 END$$
+
 
 --
 
