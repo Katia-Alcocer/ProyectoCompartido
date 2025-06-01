@@ -389,7 +389,6 @@ CREATE PROCEDURE AgregarAlCarrito (
 BEGIN
     DECLARE v_stock INT;
 
-    -- Obtener el stock actual del producto
     SELECT stock INTO v_stock FROM Productos WHERE idProducto = p_id_producto;
 
     IF p_cantidad <= v_stock THEN
