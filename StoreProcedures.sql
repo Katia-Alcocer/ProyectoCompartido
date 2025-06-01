@@ -456,6 +456,8 @@ BEGIN
     DECLARE v_cantidad_productos INT;
     DECLARE v_id_venta INT;
     DECLARE v_cliente INT;
+    DECLARE v_credito_cliente DECIMAL(10,2);
+    DECLARE v_limite_cliente DECIMAL(10,2);
 
     -- Asignar cliente: si no es válido, asignar 0 (cliente genérico)
     SET v_cliente = IF(p_id_cliente IS NULL OR p_id_cliente <= 0, 0, p_id_cliente);
@@ -463,8 +465,8 @@ BEGIN
     -- Calcular subtotal, IVA, IEPS y cantidad de productos sumados
     SELECT 
         SUM(p.PrecioVenta * t.Cantidad),
-        SUM(p.PrecioVenta * t.Cantidad * 0.16), -- Ejemplo IVA 16%
-        SUM(p.PrecioVenta * t.Cantidad * 0.08), -- Ejemplo IEPS 8%
+        SUM(p.PrecioVenta * t.Cantidad * 0.16), -- IVA 16%
+        SUM(p.PrecioVenta * t.Cantidad * 0.08), -- IEPS 8%
         SUM(t.Cantidad)
     INTO 
         v_subtotal, v_iva, v_ieps, v_cantidad_productos
@@ -473,6 +475,28 @@ BEGIN
     WHERE t.idEmpleado = p_id_empleado;
 
     SET v_monto = v_subtotal + v_iva + v_ieps;
+
+    -- Si es venta a credito, validar que cliente tenga suficiente credito
+    IF p_tipo_pago = 'Credito' THEN
+        SELECT Credito, Limite
+        INTO v_credito_cliente, v_limite_cliente
+        FROM Clientes
+        WHERE idCliente = v_cliente
+        FOR UPDATE;
+
+        IF v_cliente = 0 THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cliente generico no puede comprar a credito.';
+        END IF;
+
+        IF v_credito_cliente < v_monto THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Credito insuficiente para realizar la venta.';
+        END IF;
+
+        -- Descontar el credito del cliente
+        UPDATE Clientes
+        SET Credito = Credito - v_monto
+        WHERE idCliente = v_cliente;
+    END IF;
 
     -- Insertar la venta
     INSERT INTO Ventas (Monto, Fecha, Subtotal, IVA, IEPS, CantidadProductos, TipoPago, Estatus, idCliente, idEmpleado)
@@ -491,7 +515,7 @@ BEGIN
         p.PrecioVenta * t.Cantidad * 0.08, -- IEPS
         v_id_venta,
         t.idProducto,
-        NULL -- Puedes agregar lógica para descuentos si quieres
+        NULL -- Aquí puedes añadir lógica para descuentos si quieres
     FROM Temp_Ventas t
     JOIN Productos p ON t.idProducto = p.idProducto
     WHERE t.idEmpleado = p_id_empleado;
@@ -505,7 +529,7 @@ BEGIN
     -- Limpiar carrito
     DELETE FROM Temp_Ventas WHERE idEmpleado = p_id_empleado;
 
-    -- Insertar registro en Finanzas (invertido = 0 por simplificar, cambia según necesites)
+    -- Insertar registro en Finanzas (invertido = 0 para simplificar, cambia según necesites)
     INSERT INTO Finanzas (idVenta, TotalVenta, Invertido)
     VALUES (v_id_venta, v_monto, 0);
 END$$
