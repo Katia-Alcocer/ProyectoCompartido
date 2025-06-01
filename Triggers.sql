@@ -316,18 +316,6 @@ END$$
 DELIMITER ;
 
 DELIMITER $$
-
--- 19. AfterInsertVentaClearCarrito
-CREATE TRIGGER AfterInsertVentaClearCarrito
-AFTER INSERT ON Ventas
-FOR EACH ROW
-BEGIN
-    DELETE FROM Temp_Ventas
-    WHERE idEmpleado = NEW.idEmpleado;
-END$$
-DELIMITER ;
-
-DELIMITER $$
 -- 20. VentaCantidadBefore
 CREATE TRIGGER VentaCantidadBefore
 BEFORE INSERT ON DetalleVenta

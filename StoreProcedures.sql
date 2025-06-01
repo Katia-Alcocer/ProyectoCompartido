@@ -501,6 +501,15 @@ BEGIN
     JOIN Productos p ON t.idProducto = p.idProducto
     WHERE t.idEmpleado = p_id_empleado;
 
+    -- Actualizar stock de productos
+    UPDATE Productos p
+    JOIN Temp_Ventas t ON p.idProducto = t.idProducto
+    SET p.Stock = p.Stock - t.Cantidad
+    WHERE t.idEmpleado = p_id_empleado;
+
+    -- Limpiar carrito
+    DELETE FROM Temp_Ventas WHERE idEmpleado = p_id_empleado;
+
     -- Insertar registro en Finanzas con el total invertido calculado
     INSERT INTO Finanzas (idVenta, TotalVenta, Invertido)
     VALUES (v_id_venta, v_monto, v_invertido);
