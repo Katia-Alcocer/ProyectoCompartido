@@ -351,14 +351,3 @@ END$$
 DELIMITER ;
 
 DELIMITER $$
--- 22. DescontarCantidadDespuesDeVenta
-CREATE TRIGGER DescontarCantidadDespuesDeVenta
-AFTER INSERT ON DetalleVenta
-FOR EACH ROW
-BEGIN
-    -- Descontar stock del producto vendido
-    UPDATE Productos
-    SET Stock = Stock - NEW.Cantidad
-    WHERE idProducto = NEW.idProducto;
-END$$
-DELIMITER ;
