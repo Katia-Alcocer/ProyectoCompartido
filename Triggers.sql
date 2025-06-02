@@ -269,9 +269,9 @@ CREATE TRIGGER ProductoUpdateBefore
 BEFORE UPDATE ON Productos
 FOR EACH ROW
 BEGIN
-    IF NEW.Stock = 0 OR NEW.PrecioVenta < NEW.PrecioCompra THEN
+    IF NEW.Stock = 0 THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Stock no puede ser 0 ni el precio de venta menor al de compra.';
+        SET MESSAGE_TEXT = 'Stock no puede ser 0';
     END IF;
 END$$
 DELIMITER ;
