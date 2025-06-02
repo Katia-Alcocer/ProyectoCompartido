@@ -341,64 +341,101 @@ END$$
 CREATE PROCEDURE RegistrarPedido (
     IN p_id_cliente INT,
     IN p_id_empleado INT,
-    IN p_fecha DATE,
-    IN p_productos JSON
+    IN p_fecha DATE
 )
 BEGIN
     DECLARE v_id_pedido INT;
 
     START TRANSACTION;
 
+    -- Insertar pedido
     INSERT INTO Pedidos (idCliente, idEmpleado, Fecha, Estatus)
     VALUES (p_id_cliente, p_id_empleado, p_fecha, 'Pendiente');
 
     SET v_id_pedido = LAST_INSERT_ID();
 
-    -- Insertar detalles del pedido
+    -- Insertar detalles usando Temp_Ventas y precio actual de Productos
     INSERT INTO DetallePedidos (idPedido, idProducto, Cantidad, PrecioUnitario)
     SELECT
         v_id_pedido,
-        CAST(JSON_UNQUOTE(JSON_EXTRACT(j.value, '$.id_producto')) AS UNSIGNED),
-        CAST(JSON_UNQUOTE(JSON_EXTRACT(j.value, '$.cantidad')) AS UNSIGNED),
-        CAST(JSON_UNQUOTE(JSON_EXTRACT(j.value, '$.precioUnitario')) AS DECIMAL(10,2))
-    FROM JSON_TABLE(p_productos, "$[*]"
-        COLUMNS (value JSON PATH "$")
-    ) AS j;
+        tv.idProducto,
+        tv.Cantidad,
+        p.PrecioVenta -- o el campo que almacene el precio unitario
+    FROM Temp_Ventas tv
+    JOIN Productos p ON tv.idProducto = p.idProducto
+    WHERE tv.idEmpleado = p_id_empleado;
+
+    -- Vaciar carrito temporal para el empleado
+    DELETE FROM Temp_Ventas WHERE idEmpleado = p_id_empleado;
 
     COMMIT;
 END$$
 
 
-CREATE PROCEDURE CambiaEstatusPedido (
-    IN p_id_pedido INT,
-    IN p_estatus ENUM('Pendiente', 'Aceptado', 'Enviado', 'Cancelado')
+-- Procedimiento para cambiar el estatus a 'Aceptado'
+CREATE PROCEDURE CambiarPedidoAAceptado (
+    IN p_id_pedido INT
 )
 BEGIN
     UPDATE Pedidos
-    SET Estatus = p_estatus
+    SET Estatus = 'Aceptado'
+    WHERE idPedido = p_id_pedido;
+END$$
+
+-- Procedimiento para cambiar el estatus a 'Enviado'
+CREATE PROCEDURE CambiarPedidoAEnviado (
+    IN p_id_pedido INT
+)
+BEGIN
+    UPDATE Pedidos
+    SET Estatus = 'Enviado'
+    WHERE idPedido = p_id_pedido;
+END$$
+
+-- Procedimiento para cambiar el estatus a 'Cancelado'
+CREATE PROCEDURE CambiarPedidoACancelado (
+    IN p_id_pedido INT
+)
+BEGIN
+    UPDATE Pedidos
+    SET Estatus = 'Cancelado'
     WHERE idPedido = p_id_pedido;
 END$$
 
 --
 
 CREATE PROCEDURE AgregarAlCarrito (
+    IN p_id_empleado INT,
     IN p_id_producto INT,
     IN p_cantidad INT
 )
 BEGIN
-    DECLARE v_stock INT;
-    DECLARE v_id_empleado INT;
-
-    -- Obtener el idEmpleado de la variable de sesión
-    SET v_id_empleado = @id_empleado_sesion;
+    DECLARE v_stock INT DEFAULT 0;
+    DECLARE v_cantidad_actual INT DEFAULT 0;
+    DECLARE v_cantidad_total INT DEFAULT 0;
 
     -- Obtener el stock actual del producto
     SELECT stock INTO v_stock FROM Productos WHERE idProducto = p_id_producto;
 
-    IF p_cantidad <= v_stock THEN
+    -- Obtener la cantidad actual en el carrito para ese producto y empleado (si existe)
+    SELECT Cantidad INTO v_cantidad_actual 
+    FROM Temp_Ventas 
+    WHERE idEmpleado = p_id_empleado AND idProducto = p_id_producto;
+
+    IF v_cantidad_actual IS NULL THEN
+        SET v_cantidad_actual = 0;
+    END IF;
+
+    SET v_cantidad_total = v_cantidad_actual + p_cantidad;
+
+    -- Validar si la cantidad total no supera el stock
+    IF v_cantidad_total <= v_stock THEN
         INSERT INTO Temp_Ventas (idEmpleado, idProducto, Cantidad)
-        VALUES (v_id_empleado, p_id_producto, p_cantidad)
+        VALUES (p_id_empleado, p_id_producto, p_cantidad)
         ON DUPLICATE KEY UPDATE Cantidad = Cantidad + p_cantidad;
+    ELSE
+        -- Opcional: aquí podrías lanzar un error o hacer otra acción si se excede el stock
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cantidad solicitada excede el stock disponible.';
     END IF;
 END$$
 

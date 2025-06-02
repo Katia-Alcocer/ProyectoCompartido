@@ -329,25 +329,3 @@ BEGIN
     END IF;
 END$$
 DELIMITER ;
-
-DELIMITER $$
-
--- 21. DevolucionCantidadBefore
-CREATE TRIGGER DevolucionCantidadBefore
-BEFORE INSERT ON DetallePedidos
-FOR EACH ROW
-BEGIN
-    DECLARE cantidadVendida INT;
-    SELECT Cantidad INTO cantidadVendida
-    FROM DetalleVenta
-    WHERE idProducto = NEW.idProducto
-    LIMIT 1;
-
-    IF NEW.Cantidad > cantidadVendida THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'No se puede devolver más de lo vendido.';
-    END IF;
-END$$
-DELIMITER ;
-
-DELIMITER $$
