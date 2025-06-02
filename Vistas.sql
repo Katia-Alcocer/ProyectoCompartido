@@ -81,7 +81,7 @@ WHERE p.Estatus = 'Inactivo';
 
 
 -- 5. VistaEstadoInventario
-CREATE OR REPLACE VIEW VistaEstadoInventario AS
+CREATE OR REPLACE VIEW VistaProductosActivos AS
 SELECT 
     p.idProducto,
     p.Nombre AS Producto,
@@ -93,7 +93,26 @@ SELECT
     p.Estado
 FROM Productos p
 JOIN Categorias c ON p.idCategoria = c.idCategoria
-JOIN Proveedores pr ON p.idProveedor = pr.idProveedor;
+JOIN Proveedores pr ON p.idProveedor = pr.idProveedor
+WHERE p.Estado = 'Activo';
+
+-- 5.1 VistaEstadoInventario
+CREATE OR REPLACE VIEW VistaProductosInactivos AS
+SELECT 
+    p.idProducto,
+    p.Nombre AS Producto,
+    c.Nombre AS Categoria,
+    pr.Nombre AS Proveedor,
+    p.Stock,
+    p.PrecioCompra,
+    p.PrecioVenta,
+    p.Estado
+FROM Productos p
+JOIN Categorias c ON p.idCategoria = c.idCategoria
+JOIN Proveedores pr ON p.idProveedor = pr.idProveedor
+WHERE p.Estado = 'Inactivo';
+
+
 
 
 -- 6. VistaClientesActivos

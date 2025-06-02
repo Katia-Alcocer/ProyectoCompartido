@@ -54,6 +54,16 @@ BEGIN
     WHERE idProducto = p_idProducto;
 END$$
 
+CREATE PROCEDURE RecuperarProducto (
+    IN p_idProducto INT
+)
+BEGIN
+    UPDATE Productos
+    SET Estado = 'Activo'
+    WHERE idProducto = p_idProducto;
+END$$
+
+
 -- Metodos de Busqueda
 
 CREATE PROCEDURE BuscarProductoPorNombre (
@@ -170,6 +180,22 @@ BEGIN
     WHERE idPersona = persona_id;
 END$$
 
+CREATE PROCEDURE RecuperarEmpleado (
+    IN p_idEmpleado INT
+)
+BEGIN
+    DECLARE persona_id INT;
+
+    SELECT idPersona INTO persona_id
+    FROM Empleados
+    WHERE idEmpleado = p_idEmpleado;
+
+    UPDATE Personas
+    SET Estatus = 'Activo'
+    WHERE idPersona = persona_id;
+END$$
+
+
 
 --
 
@@ -264,6 +290,23 @@ BEGIN
     WHERE idPersona = persona_id;
 END$$
 
+CREATE PROCEDURE RecuperarCliente (
+    IN p_idCliente INT
+)
+BEGIN
+    DECLARE persona_id INT;
+
+    SELECT idPersona INTO persona_id
+    FROM Clientes
+    WHERE idCliente = p_idCliente;
+
+    -- Recuperación lógica en Personas
+    UPDATE Personas
+    SET Estatus = 'Activo'
+    WHERE idPersona = persona_id;
+END$$
+
+
 --
 
 CREATE PROCEDURE AgregarProveedor (
@@ -339,19 +382,22 @@ END$$
 --
 
 CREATE PROCEDURE AgregarAlCarrito (
-    IN p_id_empleado INT,
     IN p_id_producto INT,
     IN p_cantidad INT
 )
 BEGIN
     DECLARE v_stock INT;
+    DECLARE v_id_empleado INT;
+
+    -- Obtener el idEmpleado de la variable de sesión
+    SET v_id_empleado = @id_empleado_sesion;
 
     -- Obtener el stock actual del producto
     SELECT stock INTO v_stock FROM Productos WHERE idProducto = p_id_producto;
 
     IF p_cantidad <= v_stock THEN
         INSERT INTO Temp_Ventas (idEmpleado, idProducto, Cantidad)
-        VALUES (p_id_empleado, p_id_producto, p_cantidad)
+        VALUES (v_id_empleado, p_id_producto, p_cantidad)
         ON DUPLICATE KEY UPDATE Cantidad = Cantidad + p_cantidad;
     END IF;
 END$$
@@ -410,6 +456,8 @@ BEGIN
     DECLARE v_cantidad_productos INT;
     DECLARE v_id_venta INT;
     DECLARE v_cliente INT;
+    DECLARE v_credito_cliente DECIMAL(10,2);
+    DECLARE v_limite_cliente DECIMAL(10,2);
 
     -- Asignar cliente: si no es válido, asignar 0 (cliente genérico)
     SET v_cliente = IF(p_id_cliente IS NULL OR p_id_cliente <= 0, 0, p_id_cliente);
@@ -417,8 +465,8 @@ BEGIN
     -- Calcular subtotal, IVA, IEPS y cantidad de productos sumados
     SELECT 
         SUM(p.PrecioVenta * t.Cantidad),
-        SUM(p.PrecioVenta * t.Cantidad * 0.16), -- Ejemplo IVA 16%
-        SUM(p.PrecioVenta * t.Cantidad * 0.08), -- Ejemplo IEPS 8%
+        SUM(p.PrecioVenta * t.Cantidad * 0.16), -- IVA 16%
+        SUM(p.PrecioVenta * t.Cantidad * 0.08), -- IEPS 8%
         SUM(t.Cantidad)
     INTO 
         v_subtotal, v_iva, v_ieps, v_cantidad_productos
@@ -427,6 +475,28 @@ BEGIN
     WHERE t.idEmpleado = p_id_empleado;
 
     SET v_monto = v_subtotal + v_iva + v_ieps;
+
+    -- Si es venta a credito, validar que cliente tenga suficiente credito
+    IF p_tipo_pago = 'Credito' THEN
+        SELECT Credito, Limite
+        INTO v_credito_cliente, v_limite_cliente
+        FROM Clientes
+        WHERE idCliente = v_cliente
+        FOR UPDATE;
+
+        IF v_cliente = 0 THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cliente generico no puede comprar a credito.';
+        END IF;
+
+        IF v_credito_cliente < v_monto THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Credito insuficiente para realizar la venta.';
+        END IF;
+
+        -- Descontar el credito del cliente
+        UPDATE Clientes
+        SET Credito = Credito - v_monto
+        WHERE idCliente = v_cliente;
+    END IF;
 
     -- Insertar la venta
     INSERT INTO Ventas (Monto, Fecha, Subtotal, IVA, IEPS, CantidadProductos, TipoPago, Estatus, idCliente, idEmpleado)
@@ -445,7 +515,7 @@ BEGIN
         p.PrecioVenta * t.Cantidad * 0.08, -- IEPS
         v_id_venta,
         t.idProducto,
-        NULL -- Puedes agregar lógica para descuentos si quieres
+        NULL -- Aquí puedes añadir lógica para descuentos si quieres
     FROM Temp_Ventas t
     JOIN Productos p ON t.idProducto = p.idProducto
     WHERE t.idEmpleado = p_id_empleado;
@@ -459,7 +529,7 @@ BEGIN
     -- Limpiar carrito
     DELETE FROM Temp_Ventas WHERE idEmpleado = p_id_empleado;
 
-    -- Insertar registro en Finanzas (invertido = 0 por simplificar, cambia según necesites)
+    -- Insertar registro en Finanzas (invertido = 0 para simplificar, cambia según necesites)
     INSERT INTO Finanzas (idVenta, TotalVenta, Invertido)
     VALUES (v_id_venta, v_monto, 0);
 END$$
@@ -520,8 +590,10 @@ BEGIN
     -- Eliminar todos los detalles de la venta
     DELETE FROM DetalleVenta WHERE idVenta = p_idVenta;
 
-    -- Eliminar la venta
-    DELETE FROM Ventas WHERE idVenta = p_idVenta;
+    -- Marcar la venta como devuelta en lugar de eliminarla
+    UPDATE Ventas
+    SET Estatus = 'Devuelta'
+    WHERE idVenta = p_idVenta;
 END$$
 
 CREATE PROCEDURE sp_ObtenerCarritoPorEmpleado(IN empleadoId INT)
