@@ -49,6 +49,9 @@ ADD COLUMN Peso1 DECIMAL(10,2),
 ADD COLUMN Peso2 DECIMAL(10,2),
 ADD COLUMN PesoTotal DECIMAL(10,2);
 
+ALTER TABLE Productos
+ADD COLUMN `C.extra` FLOAT NULL;
+
 DELIMITER $$
 
 CREATE TRIGGER trg_insert_calcular_peso_total
