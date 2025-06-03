@@ -141,49 +141,86 @@ JOIN Personas p ON c.idPersona = p.idPersona
 LEFT JOIN Descuentos d ON c.idDescuento = d.idDescuento
 WHERE p.Estatus = 'Inactivo';
 
-
-
--- 8. VistaPedidosPendientes
+-- Vista para Pedidos Pendientes
 CREATE OR REPLACE VIEW VistaPedidosPendientes AS
 SELECT 
     p.idPedido,
     p.Fecha,
     p.Hora,
     p.Estatus,
-    cl.idCliente,
-    pe.Nombre AS NombreCliente
+    p.idCliente,
+    clp.Nombre AS NombreCliente,
+    p.idEmpleado,
+    epl.Nombre AS NombreEmpleado,
+    dp.idDetallePedido,
+    dp.idProducto,
+    prod.Nombre AS NombreProducto,
+    dp.Cantidad,
+    dp.PrecioUnitario,
+    dp.Subtotal
 FROM Pedidos p
 JOIN Clientes cl ON p.idCliente = cl.idCliente
-JOIN Personas pe ON cl.idPersona = pe.idPersona
+JOIN Personas clp ON cl.idPersona = clp.idPersona
+LEFT JOIN Empleados e ON p.idEmpleado = e.idEmpleado
+LEFT JOIN Personas epl ON e.idPersona = epl.idPersona
+JOIN DetallePedidos dp ON p.idPedido = dp.idPedido
+JOIN Productos prod ON dp.idProducto = prod.idProducto
 WHERE p.Estatus = 'Pendiente';
 
--- 9. VistaPedidosAceptados
+-- Vista para Pedidos Aceptados
 CREATE OR REPLACE VIEW VistaPedidosAceptados AS
 SELECT 
     p.idPedido,
     p.Fecha,
     p.Hora,
     p.Estatus,
-    cl.idCliente,
-    pe.Nombre AS NombreCliente
+    p.idCliente,
+    clp.Nombre AS NombreCliente,
+    p.idEmpleado,
+    epl.Nombre AS NombreEmpleado,
+    dp.idDetallePedido,
+    dp.idProducto,
+    prod.Nombre AS NombreProducto,
+    dp.Cantidad,
+    dp.PrecioUnitario,
+    dp.Subtotal
 FROM Pedidos p
 JOIN Clientes cl ON p.idCliente = cl.idCliente
-JOIN Personas pe ON cl.idPersona = pe.idPersona
+JOIN Personas clp ON cl.idPersona = clp.idPersona
+LEFT JOIN Empleados e ON p.idEmpleado = e.idEmpleado
+LEFT JOIN Personas epl ON e.idPersona = epl.idPersona
+JOIN DetallePedidos dp ON p.idPedido = dp.idPedido
+JOIN Productos prod ON dp.idProducto = prod.idProducto
 WHERE p.Estatus = 'Aceptado';
 
--- 10. VistaPedidosEnviados
-CREATE OR REPLACE VIEW VistaPedidosEnviados AS
+
+CREATE OR REPLACE VIEW VistaPedidosConProductos AS
 SELECT 
     p.idPedido,
     p.Fecha,
     p.Hora,
     p.Estatus,
-    cl.idCliente,
-    pe.Nombre AS NombreCliente
+    p.idCliente,
+    clp.Nombre AS NombreCliente,
+    p.idEmpleado,
+    epl.Nombre AS NombreEmpleado,
+    dp.idDetallePedido,
+    dp.idProducto,
+    prod.Nombre AS NombreProducto,
+    dp.Cantidad,
+    dp.PrecioUnitario,
+    dp.Subtotal
 FROM Pedidos p
 JOIN Clientes cl ON p.idCliente = cl.idCliente
-JOIN Personas pe ON cl.idPersona = pe.idPersona
-WHERE p.Estatus = 'Enviado';
+JOIN Personas clp ON cl.idPersona = clp.idPersona
+LEFT JOIN Empleados e ON p.idEmpleado = e.idEmpleado
+LEFT JOIN Personas epl ON e.idPersona = epl.idPersona
+JOIN DetallePedidos dp ON p.idPedido = dp.idPedido
+JOIN Productos prod ON dp.idProducto = prod.idProducto
+WHERE p.Estatus IN ('Pendiente', 'Aceptado', 'Enviado', 'Cancelado');
+
+
+
 
 -- 11. VistaObtenerCarritoPorEmpleado
 CREATE OR REPLACE VIEW VistaObtenerCarritoPorEmpleado AS

@@ -83,43 +83,6 @@ BEGIN
 END$$
 
 --
-
-CREATE PROCEDURE AgregarEmpleado (
-    IN p_Nombre VARCHAR(50),
-    IN p_Paterno VARCHAR(50),
-    IN p_Materno VARCHAR(50),
-    IN p_Telefono VARCHAR(10),
-    IN p_Email VARCHAR(50),
-    IN p_Edad SMALLINT,
-    IN p_Sexo ENUM('H','M'),
-    IN p_idDomicilio INT,
-    IN p_Puesto ENUM('Administrador', 'Cajero', 'Agente de Venta'),
-    IN p_RFC VARCHAR(13),
-    IN p_NumeroSeguroSocial VARCHAR(11),
-    IN p_Usuario VARCHAR(255),
-    IN p_Contrasena VARCHAR(255)
-)
-BEGIN
-    DECLARE nuevo_idPersona INT;
-
-    -- Insertar en Personas
-    INSERT INTO Personas (
-        Nombre, Paterno, Materno, Telefono, Email, Edad, Sexo, Estatus, idDomicilio
-    ) VALUES (
-        p_Nombre, p_Paterno, p_Materno, p_Telefono, p_Email, p_Edad, p_Sexo, 'Activo', p_idDomicilio
-    );
-
-    SET nuevo_idPersona = LAST_INSERT_ID();
-
-    -- Insertar en Empleados
-    INSERT INTO Empleados (
-        Puesto, RFC, NumeroSeguroSocial, Usuario, Contraseña, idPersona
-    ) VALUES (
-        p_Puesto, p_RFC, p_NumeroSeguroSocial, p_Usuario, p_Contrasena, nuevo_idPersona
-    );
-END$$
-
-
 CREATE PROCEDURE ActualizarEmpleado (
     IN p_idEmpleado INT,
     IN p_Nombre VARCHAR(50),
@@ -128,8 +91,10 @@ CREATE PROCEDURE ActualizarEmpleado (
     IN p_Telefono VARCHAR(10),
     IN p_Email VARCHAR(50),
     IN p_Edad SMALLINT,
-    IN p_Sexo CHAR(1),  -- Cambiado de ENUM a CHAR(1)
-    IN p_idDomicilio INT,
+    IN p_Sexo CHAR(1),  -- Puede ser 'H' o 'M'
+    IN p_Calle VARCHAR(50),
+    IN p_Numero INT,
+    IN p_d_CP VARCHAR(10), -- Código postal legible, ejemplo: '36013'
     IN p_Puesto ENUM('Administrador', 'Cajero', 'Agente de Venta'),
     IN p_RFC VARCHAR(13),
     IN p_NumeroSeguroSocial VARCHAR(11),
@@ -137,11 +102,36 @@ CREATE PROCEDURE ActualizarEmpleado (
 )
 BEGIN
     DECLARE persona_id INT;
+    DECLARE domicilio_id INT;
+    DECLARE v_c_CP INT;
+
+    -- Buscar el c_CP correspondiente al código postal legible (d_CP)
+    SELECT c_CP INTO v_c_CP
+    FROM CodigosPostales
+    WHERE d_CP = p_d_CP
+    LIMIT 1;
+
+    -- Validar si se encontró el código postal
+    IF v_c_CP IS NULL THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El código postal proporcionado no existe en CodigosPostales.';
+    END IF;
 
     -- Obtener el idPersona vinculado al empleado
     SELECT idPersona INTO persona_id
     FROM Empleados
     WHERE idEmpleado = p_idEmpleado;
+
+    -- Obtener idDomicilio actual de la persona
+    SELECT idDomicilio INTO domicilio_id
+    FROM Personas
+    WHERE idPersona = persona_id;
+
+    -- Actualizar domicilio con la nueva calle, número y c_CP
+    UPDATE Domicilios
+    SET Calle = p_Calle,
+        Numero = p_Numero,
+        c_CP = v_c_CP
+    WHERE idDomicilio = domicilio_id;
 
     -- Actualizar en Personas
     UPDATE Personas
@@ -152,7 +142,7 @@ BEGIN
         Email = p_Email,
         Edad = p_Edad,
         Sexo = p_Sexo,
-        idDomicilio = p_idDomicilio
+        idDomicilio = domicilio_id
     WHERE idPersona = persona_id;
 
     -- Actualizar en Empleados (sin contraseña)
@@ -163,7 +153,6 @@ BEGIN
         Usuario = p_Usuario
     WHERE idEmpleado = p_idEmpleado;
 END$$
-
 
 CREATE PROCEDURE EliminarEmpleado (
     IN p_idEmpleado INT
@@ -195,43 +184,6 @@ BEGIN
     WHERE idPersona = persona_id;
 END$$
 
-
-
---
-
-CREATE PROCEDURE AgregarCliente (
-    IN p_Nombre VARCHAR(50),
-    IN p_Paterno VARCHAR(50),
-    IN p_Materno VARCHAR(50),
-    IN p_Telefono VARCHAR(10),
-    IN p_Email VARCHAR(50),
-    IN p_Edad SMALLINT,
-    IN p_Sexo ENUM('H','M'),
-    IN p_idDomicilio INT,
-    IN p_Credito DECIMAL(10,2),
-    IN p_Limite DECIMAL(10,2),
-    IN p_idDescuento INT
-)
-BEGIN
-    DECLARE nuevo_idPersona INT;
-
-    -- Insertar en Personas
-    INSERT INTO Personas (
-        Nombre, Paterno, Materno, Telefono, Email, Edad, Sexo, Estatus, idDomicilio
-    ) VALUES (
-        p_Nombre, p_Paterno, p_Materno, p_Telefono, p_Email, p_Edad, p_Sexo, 'Activo', p_idDomicilio
-    );
-
-    SET nuevo_idPersona = LAST_INSERT_ID();
-
-    -- Insertar en Clientes
-    INSERT INTO Clientes (
-        Credito, Limite, idPersona, idDescuento
-    ) VALUES (
-        p_Credito, p_Limite, nuevo_idPersona, p_idDescuento
-    );
-END$$
-
 CREATE PROCEDURE ActualizarCliente (
     IN p_idCliente INT,
     IN p_Nombre VARCHAR(50),
@@ -244,15 +196,33 @@ CREATE PROCEDURE ActualizarCliente (
     IN p_idDomicilio INT,
     IN p_Credito DECIMAL(10,2),
     IN p_Limite DECIMAL(10,2),
-    IN p_idDescuento INT
+    IN p_idDescuento INT,
+    IN p_Calle VARCHAR(50),
+    IN p_Numero INT,
+    IN p_d_CP VARCHAR(10)
 )
 BEGIN
     DECLARE persona_id INT;
+    DECLARE v_c_CP INT;
 
     -- Obtener idPersona correspondiente al cliente
     SELECT idPersona INTO persona_id
     FROM Clientes
     WHERE idCliente = p_idCliente;
+
+    -- Obtener c_CP a partir del d_CP
+    SELECT c_CP INTO v_c_CP FROM CodigosPostales WHERE d_CP = p_d_CP LIMIT 1;
+
+    IF v_c_CP IS NULL THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Código postal no encontrado.';
+    END IF;
+
+    -- Actualizar domicilio
+    UPDATE Domicilios
+    SET Calle = p_Calle,
+        Numero = p_Numero,
+        c_CP = v_c_CP
+    WHERE idDomicilio = p_idDomicilio;
 
     -- Actualizar Persona
     UPDATE Personas
@@ -272,7 +242,7 @@ BEGIN
         Limite = p_Limite,
         idDescuento = p_idDescuento
     WHERE idCliente = p_idCliente;
-END$$
+END $$
 
 CREATE PROCEDURE EliminarCliente (
     IN p_idCliente INT
@@ -571,29 +541,140 @@ BEGIN
     VALUES (v_id_venta, v_monto, 0);
 END$$
 
---
-
-
-CREATE PROCEDURE DevolverProductoIndividual (
-    IN p_idVenta INT,
-    IN p_idProducto INT
+CREATE PROCEDURE ProcesarVentaDePedido (
+    IN p_id_pedido INT
 )
 BEGIN
-    DECLARE v_cantidad INT;
+    DECLARE v_id_empleado INT;
+    DECLARE v_id_cliente INT;
+    DECLARE v_tipo_pago ENUM('Contado', 'Cheque', 'Transferencia', 'Credito');
+    DECLARE v_subtotal DECIMAL(10,2);
+    DECLARE v_iva DECIMAL(10,2);
+    DECLARE v_ieps DECIMAL(10,2);
+    DECLARE v_monto DECIMAL(10,2);
+    DECLARE v_cantidad_productos INT;
+    DECLARE v_id_venta INT;
+    DECLARE v_credito_cliente DECIMAL(10,2);
+    DECLARE v_limite_cliente DECIMAL(10,2);
 
-    -- Obtener la cantidad del producto en el detalle de venta
-    SELECT Cantidad INTO v_cantidad FROM DetalleVenta
-    WHERE idVenta = p_idVenta AND idProducto = p_idProducto;
+    -- Establecer tipo de pago fijo (puedes cambiarlo si quieres)
+    SET v_tipo_pago = 'Credito';
 
-    -- Actualizar el stock del producto sumando la cantidad devuelta
-    UPDATE Productos
-    SET stock = stock + v_cantidad
-    WHERE idProducto = p_idProducto;
+    -- Obtener datos del pedido
+    SELECT idEmpleado, idCliente
+    INTO v_id_empleado, v_id_cliente
+    FROM Pedidos
+    WHERE idPedido = p_id_pedido;
 
-    -- Eliminar ese producto del detalle de la venta
-    DELETE FROM DetalleVenta
-    WHERE idVenta = p_idVenta AND idProducto = p_idProducto;
+    -- Calcular totales del pedido a partir de DetallePedidos y Productos
+    SELECT
+        SUM(dp.Cantidad * dp.PrecioUnitario),
+        SUM(dp.Cantidad * dp.PrecioUnitario * 0.16),
+        SUM(dp.Cantidad * dp.PrecioUnitario * 0.08),
+        SUM(dp.Cantidad)
+    INTO
+        v_subtotal, v_iva, v_ieps, v_cantidad_productos
+    FROM DetallePedidos dp
+    WHERE dp.idPedido = p_id_pedido;
+
+    SET v_monto = v_subtotal + v_iva + v_ieps;
+
+    -- Validar crédito si es pago a credito
+    IF v_tipo_pago = 'Credito' THEN
+        IF v_id_cliente = 0 THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cliente genérico no puede comprar a crédito.';
+        END IF;
+
+        SELECT Credito, Limite
+        INTO v_credito_cliente, v_limite_cliente
+        FROM Clientes
+        WHERE idCliente = v_id_cliente
+        FOR UPDATE;
+
+        IF v_credito_cliente < v_monto THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Crédito insuficiente para realizar la venta.';
+        END IF;
+
+        -- Descontar crédito
+        UPDATE Clientes SET Credito = Credito - v_monto WHERE idCliente = v_id_cliente;
+    END IF;
+
+    -- Insertar la venta
+    INSERT INTO Ventas (Monto, Fecha, Subtotal, IVA, IEPS, CantidadProductos, TipoPago, Estatus, idCliente, idEmpleado)
+    VALUES (v_monto, NOW(), v_subtotal, v_iva, v_ieps, v_cantidad_productos, v_tipo_pago,
+            CASE WHEN v_tipo_pago = 'Credito' THEN 'En Espera de Pago' ELSE 'Pagada' END,
+            v_id_cliente, v_id_empleado);
+
+    SET v_id_venta = LAST_INSERT_ID();
+
+    -- Insertar detalle venta copiando de detalle pedido
+    INSERT INTO DetalleVenta (Cantidad, Total, IVA, IEPS, idVenta, idProducto, idDescuento)
+    SELECT 
+        dp.Cantidad,
+        dp.Cantidad * dp.PrecioUnitario,
+        dp.Cantidad * dp.PrecioUnitario * 0.16,
+        dp.Cantidad * dp.PrecioUnitario * 0.08,
+        v_id_venta,
+        dp.idProducto,
+        NULL
+    FROM DetallePedidos dp
+    WHERE dp.idPedido = p_id_pedido;
+
+    -- Actualizar stock
+    UPDATE Productos p
+    JOIN DetallePedidos dp ON p.idProducto = dp.idProducto
+    SET p.Stock = p.Stock - dp.Cantidad
+    WHERE dp.idPedido = p_id_pedido;
+
+    -- Actualizar estatus del pedido a 'Procesado'
+    UPDATE Pedidos SET Estatus = 'Procesado' WHERE idPedido = p_id_pedido;
+
+    -- Registrar movimiento financiero
+    INSERT INTO Finanzas (idVenta, TotalVenta, Invertido)
+    VALUES (v_id_venta, v_monto, 0);
+
 END$$
+
+--
+
+CREATE PROCEDURE DevolverProductoIndividual(
+    IN p_idVenta INT,
+    IN p_idProducto INT,
+    IN p_cantidad INT
+)
+BEGIN
+    DECLARE cantidadVendida INT;
+
+    -- Verificar cuántas piezas se vendieron en la venta original
+    SELECT Cantidad INTO cantidadVendida
+    FROM DetalleVenta
+    WHERE idVenta = p_idVenta AND idProducto = p_idProducto;
+
+    -- Validar que la cantidad a devolver no sea mayor a la vendida
+    IF cantidadVendida IS NULL THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El producto no fue encontrado en la venta.';
+    ELSEIF p_cantidad > cantidadVendida THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No se puede devolver más de lo vendido.';
+    ELSE
+        -- Restar la cantidad devuelta de la venta
+        UPDATE DetalleVenta
+        SET Cantidad = Cantidad - p_cantidad
+        WHERE idVenta = p_idVenta AND idProducto = p_idProducto;
+
+        -- Si la cantidad en DetalleVenta queda en 0, eliminar el registro
+        DELETE FROM DetalleVenta
+        WHERE idVenta = p_idVenta AND idProducto = p_idProducto AND Cantidad = 0;
+
+        -- Devolver al inventario
+        UPDATE Productos
+        SET CantidadInventario = CantidadInventario + p_cantidad
+        WHERE idProducto = p_idProducto;
+
+        -- Registrar en tabla de devoluciones (opcional)
+        INSERT INTO Devoluciones (idVenta, idProducto, Cantidad, FechaDevolucion)
+        VALUES (p_idVenta, p_idProducto, p_cantidad, NOW());
+    END IF;
+END;
 
 
 CREATE PROCEDURE DevolverVentaCompleta (
@@ -665,10 +746,6 @@ BEGIN
     END IF;
 END //
 
-DELIMITER ;
-
-
-DELIMITER //
 
 CREATE PROCEDURE RegistrarEmpleado(
     IN p_Nombre VARCHAR(50),
@@ -677,70 +754,50 @@ CREATE PROCEDURE RegistrarEmpleado(
     IN p_Telefono VARCHAR(10),
     IN p_Email VARCHAR(50),
     IN p_Edad SMALLINT,
-    IN p_Sexo ENUM('H', 'M'),
+    IN p_Sexo ENUM('H','M'),
     IN p_Calle VARCHAR(50),
     IN p_Numero INT,
-    IN p_c_CP INT,
+    IN p_d_CP VARCHAR(10), -- Ahora se pasa el código postal real, como 36013
+    IN p_Puesto ENUM('Administrador', 'Cajero', 'Agente de Venta'),
     IN p_RFC VARCHAR(13),
-    IN p_CURP VARCHAR(18),
-    IN p_NumeroSeguro VARCHAR(11),
-    IN p_Usuario VARCHAR(50),
-    IN p_Contrasena VARCHAR(50)
+    IN p_NumeroSeguroSocial VARCHAR(11),
+    IN p_Usuario VARCHAR(255),
+    IN p_Contraseña VARCHAR(255)
 )
 BEGIN
     DECLARE v_idDomicilio INT;
     DECLARE v_idPersona INT;
-    DECLARE v_idEmpleado INT;
+    DECLARE v_c_CP INT;
 
-    -- Manejador de errores
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION
-    BEGIN
-        ROLLBACK;
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Error al registrar el empleado. No se pueden agregar con datos ya registrados en el sistema.';
-    END;
+    -- Buscar el c_CP correspondiente al código postal real (d_CP)
+    SELECT c_CP INTO v_c_CP
+    FROM CodigosPostales
+    WHERE d_CP = p_d_CP
+    LIMIT 1;
 
-    -- Validación previa: Teléfono o Email ya existen
-    IF EXISTS (
-        SELECT 1 FROM Personas WHERE Telefono = p_Telefono OR Email = p_Email
-    ) THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Teléfono o Email ya registrados';
+    -- Validar si se encontró el código
+    IF v_c_CP IS NULL THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El código postal proporcionado no existe en CodigosPostales.';
     END IF;
 
-    -- Validación previa: Usuario ya existe
-    IF EXISTS (
-        SELECT 1 FROM Empleados WHERE Usuario = p_Usuario
-    ) THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Usuario ya registrado';
-    END IF;
+    -- Insertar domicilio
+    INSERT INTO Domicilios (Calle, Numero, c_CP) VALUES (p_Calle, p_Numero, v_c_CP);
+    SET v_idDomicilio = LAST_INSERT_ID();
 
-    START TRANSACTION;
+    -- Insertar persona
+    INSERT INTO Personas (Nombre, Paterno, Materno, Telefono, Email, Edad, Sexo, idDomicilio)
+    VALUES (p_Nombre, p_Paterno, p_Materno, p_Telefono, p_Email, p_Edad, p_Sexo, v_idDomicilio);
+    SET v_idPersona = LAST_INSERT_ID();
 
-        -- Insertar domicilio
-        INSERT INTO Domicilios (Calle, Numero, c_CP)
-        VALUES (p_Calle, p_Numero, p_c_CP);
-        SET v_idDomicilio = LAST_INSERT_ID();
-
-        -- Insertar persona
-        INSERT INTO Personas (Nombre, Paterno, Materno, Telefono, Email, Edad, Sexo, idDomicilio)
-        VALUES (p_Nombre, p_Paterno, p_Materno, p_Telefono, p_Email, p_Edad, p_Sexo, v_idDomicilio);
-        SET v_idPersona = LAST_INSERT_ID();
-
-        -- Insertar empleado
-        INSERT INTO Empleados (Puesto, RFC, NumeroSeguroSocial, Usuario, Contraseña, idPersona)
-        VALUES ('Agente de Venta', p_RFC, p_NumeroSeguro, p_Usuario, p_Contrasena, v_idPersona);
-        SET v_idEmpleado = LAST_INSERT_ID();
-
-    COMMIT;
+    -- Insertar empleado
+    INSERT INTO Empleados (Puesto, RFC, NumeroSeguroSocial, Usuario, Contraseña, idPersona)
+    VALUES (p_Puesto, p_RFC, p_NumeroSeguroSocial, p_Usuario, p_Contraseña, v_idPersona);
 END //
-
-DELIMITER ;
-
-DELIMITER //
 
 CREATE PROCEDURE RegistrarCliente(
     IN p_Calle VARCHAR(50),
     IN p_Numero INT,
-    IN p_c_CP INT,
+    IN p_d_CP VARCHAR(10),  -- Se recibe el código postal legible del formulario
 
     IN p_Nombre VARCHAR(50),
     IN p_Paterno VARCHAR(50),
@@ -757,35 +814,32 @@ CREATE PROCEDURE RegistrarCliente(
 BEGIN
     DECLARE v_idDomicilio INT;
     DECLARE v_idPersona INT;
-    DECLARE v_idCliente INT;
-    DECLARE v_error_text TEXT;
-    DECLARE v_error_code INT;
+    DECLARE v_c_CP INT;
     DECLARE v_mensaje_error TEXT;
 
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION
-    BEGIN
-        GET DIAGNOSTICS CONDITION 1 v_error_code = MYSQL_ERRNO, v_error_text = MESSAGE_TEXT;
-        SET v_mensaje_error = CONCAT('Error [', v_error_code, ']: ', v_error_text);
-        ROLLBACK;
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = v_mensaje_error;
-    END;
+    START TRANSACTION;
 
-    -- Verificar si ya existe la persona
+    -- Obtener el c_CP a partir del d_CP
+    SELECT c_CP INTO v_c_CP FROM CodigosPostales WHERE d_CP = p_d_CP LIMIT 1;
+
+    -- Validar si se encontró el código postal
+    IF v_c_CP IS NULL THEN
+        SET v_mensaje_error = CONCAT('No se encontró c_CP para el código postal: ', p_d_CP);
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = v_mensaje_error;
+    END IF;
+
+    -- Verificar si ya existe la persona con teléfono o email
     IF EXISTS (
         SELECT 1 FROM Personas
         WHERE TRIM(Telefono) = TRIM(p_Telefono)
            OR LOWER(TRIM(Email)) = LOWER(TRIM(p_Email))
     ) THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Ya existe una persona con ese teléfono o email.';
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Ya existe una persona con ese teléfono o email.';
     END IF;
-
-    START TRANSACTION;
 
     -- Insertar domicilio
     INSERT INTO Domicilios (Calle, Numero, c_CP)
-    VALUES (p_Calle, p_Numero, p_c_CP);
+    VALUES (p_Calle, p_Numero, v_c_CP);
     SET v_idDomicilio = LAST_INSERT_ID();
 
     -- Insertar persona
@@ -796,10 +850,8 @@ BEGIN
     -- Insertar cliente
     INSERT INTO Clientes (Credito, Limite, idPersona, idDescuento)
     VALUES (p_Credito, p_Limite, v_idPersona, p_idDescuento);
-    SET v_idCliente = LAST_INSERT_ID();
 
     COMMIT;
 END;
-//
 
 DELIMITER ;
