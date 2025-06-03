@@ -329,3 +329,15 @@ BEGIN
     END IF;
 END$$
 DELIMITER ;
+
+DELIMITER $$
+
+CREATE TRIGGER trg_ProcesarVentaAlEnviar
+AFTER UPDATE ON Pedidos
+FOR EACH ROW
+BEGIN
+    IF NEW.Estatus = 'Enviado' AND OLD.Estatus <> 'Enviado' THEN
+        CALL ProcesarVentaDePedido(NEW.idPedido);
+    END IF;
+END$$
+DELIMITER ;

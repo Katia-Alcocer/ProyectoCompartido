@@ -8,7 +8,7 @@ INSERT INTO Estado (d_Estado, id_Pais) VALUES ('Guanajuato', 1);
 INSERT INTO Ciudad (d_ciudad, c_oficina, c_estado) 
 VALUES ('Guanajuato', 36001, 1);
 
---Municipios 
+--Municipios
 -- INSERTS PARA MUNICIPIOS
 INSERT INTO Municipio (D_mnpio, c_cve_ciudad) VALUES ('Guanajuato', 1);
 INSERT INTO Municipio (D_mnpio, c_cve_ciudad) VALUES ('Silao de la Victoria', 1);

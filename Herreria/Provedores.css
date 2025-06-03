@@ -1,0 +1,292 @@
+/* Reset */
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: sans-serif;
+    position: relative;
+}
+
+/* Título centrado */
+.titulo {
+    background-color: #2B0001;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 20px;
+    position: relative;
+    z-index: 2;
+    height: 60px;
+}
+
+h1 {
+    color: white;
+    font-size: 40px;
+    text-align: center;
+}
+
+/* Botón de atrás y contenedor */
+.boton-atras-contenedor {
+    position: absolute;
+    left: 20px;
+    z-index: 3;
+}
+
+.boton-atras {
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    transition: transform 0.6s ease;
+}
+
+.boton-atras-contenedor:hover .boton-atras {
+    transform: rotate(360deg);
+}
+
+/* MENÚ lateral */
+.menu {
+    position: fixed;
+    top: 60px;
+    left: -200px;
+    width: 200px;
+    height: calc(100vh - 60px);
+    background-color: #2B0001;
+    padding-top: 20px;
+    border-radius: 0 5px 5px 0;
+    opacity: 0;
+    visibility: hidden;
+    z-index: 10;
+    transition: left 0.5s ease-out, opacity 0.5s ease-out;
+}
+
+.boton-atras-contenedor:hover ~ .menu,
+.menu:hover {
+    left: 0;
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Encabezado del menú */
+.menu-header {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    gap: 10px;
+    border-bottom: 2px solid #ccc;
+}
+
+.menu-logo {
+    width: 30px;
+    height: 30px;
+}
+
+.menu-title {
+    font-size: 20px;
+    color: white;
+    margin: 0;
+}
+
+/* Lista del menú */
+.menu .list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.menu li {
+    margin: 20px 0;
+    text-align: left;
+    padding-left: 20px;
+}
+
+.menu li a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+    transition: all 0.3s ease;
+}
+
+.menu li a img {
+    width: 20px;
+    height: 20px;
+}
+
+.menu li a:hover {
+    font-size: 20px;
+    transform: scale(1.05);
+}
+
+/* Efecto blur */
+.boton-atras-contenedor:hover ~ .contenido,
+.boton-atras-contenedor:hover ~ footer,
+.menu:hover ~ .contenido,
+.menu:hover ~ footer {
+    filter: blur(4px);
+}
+
+/* Contenido principal */
+.contenido {
+    position: relative;
+    z-index: 1;
+    transition: filter 0.3s ease;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.3);
+    backdrop-filter: blur(3px);
+    z-index: 1;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease;
+}
+
+/* Tabla y Botón en una fila */
+.container {
+    background-color: #F3F1F5;
+    width: 100%;
+    min-height: 87vh;
+    padding: 0 20px;
+    display: flex;
+    flex-direction: row; /* Los pone en fila */
+    justify-content: center;
+    align-items: flex-start;
+    gap: 40px;
+    z-index: 1;
+}
+
+/* Botón de agregar a la derecha */
+.boton-agregar-container {
+    margin-top: 120px; /* Ajusta cuán abajo está */
+    margin-left: auto; /* Lo empuja hacia la derecha */
+}
+
+/* Imagen del botón */
+.agregar {
+    width: 60px;
+    height: 60px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.agregar:hover {
+    transform: scale(1.2);
+}
+
+/* Contenedor para la tabla */
+.table-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-top: 50px; /* Igual que el botón */
+}
+.table {
+    width: 80%;
+    max-width: 1000px;
+    border-collapse: collapse;
+    background-color: white;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.table th, .table td {
+    padding: 12px 10px;
+    text-align: center;
+    border: 1px solid black;
+    font-size: 16px;
+}
+
+.table th {
+    background-color: #2B0001;
+    color: white;
+}
+
+/* Footer */
+footer {
+    background-color: #F3F1F5;
+    color: black;
+    text-align: center;
+    padding: 10px;
+    width: 100%;
+    font-size: 14px;
+    z-index: 1;
+}
+
+/* Acciones (Editar/Borrar) más pequeñas */
+.acciones .mi-imagen {
+    width: 24px;
+    height: 24px;
+    transition: transform 0.3s ease;
+    cursor: pointer;
+}
+
+.acciones .mi-imagen:hover {
+    transform: scale(1.2);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 32px;
+        padding: 10px;
+    }
+
+    .table th, .table td {
+        font-size: 14px;
+        padding: 8px;
+    }
+
+    .container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .boton-agregar-container {
+        align-self: center;
+        margin-top: 20px;
+    }
+
+    .table {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 24px;
+    }
+
+    .table th, .table td {
+        font-size: 12px;
+        padding: 6px;
+    }
+
+    .acciones .mi-imagen {
+        width: 20px;
+        height: 20px;
+    }
+
+    .agregar {
+        width: 28px;
+        height: 28px;
+    }
+}
+
+/* Estilo para la imagen del proveedor */
+.proveedor-imagen {
+    width: 30px;
+    height: 30px;
+    object-fit: cover; /* Asegura que la imagen se ajuste correctamente sin distorsionarse */
+}
