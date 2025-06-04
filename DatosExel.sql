@@ -37,9 +37,7 @@ INSERT INTO Categorias (Nombre) VALUES
 ('Espiral Cuadrado');
 
 
-ALTER TABLE Productos
-DROP CHECK chk_Precios;
-
+ALTER TABLE Productos DROP CONSTRAINT chk_Precios;
 
 ALTER TABLE Productos
 DROP COLUMN PrecioVenta;

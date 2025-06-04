@@ -83,22 +83,23 @@ BEGIN
 END$$
 
 --
-CREATE PROCEDURE ActualizarEmpleado (
-    IN p_idEmpleado INT,
+DELIMITER $$
+
+CREATE PROCEDURE ActualizarCliente (
+    IN p_idCliente INT,
     IN p_Nombre VARCHAR(50),
     IN p_Paterno VARCHAR(50),
     IN p_Materno VARCHAR(50),
     IN p_Telefono VARCHAR(10),
     IN p_Email VARCHAR(50),
     IN p_Edad SMALLINT,
-    IN p_Sexo CHAR(1),  -- Puede ser 'H' o 'M'
+    IN p_Sexo ENUM('H','M'),
+    IN p_Credito DECIMAL(10,2),
+    IN p_Limite DECIMAL(10,2),
+    IN p_idDescuento INT,
     IN p_Calle VARCHAR(50),
     IN p_Numero INT,
-    IN p_d_CP VARCHAR(10), -- Código postal legible, ejemplo: '36013'
-    IN p_Puesto ENUM('Administrador', 'Cajero', 'Agente de Venta'),
-    IN p_RFC VARCHAR(13),
-    IN p_NumeroSeguroSocial VARCHAR(11),
-    IN p_Usuario VARCHAR(255)
+    IN p_d_CP VARCHAR(10)
 )
 BEGIN
     DECLARE persona_id INT;
@@ -106,25 +107,18 @@ BEGIN
     DECLARE v_c_CP INT;
 
     -- Buscar el c_CP correspondiente al código postal legible (d_CP)
-    SELECT c_CP INTO v_c_CP
-    FROM CodigosPostales
-    WHERE d_CP = p_d_CP
-    LIMIT 1;
+    SELECT c_CP INTO v_c_CP FROM CodigosPostales WHERE d_CP = p_d_CP LIMIT 1;
 
     -- Validar si se encontró el código postal
     IF v_c_CP IS NULL THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El código postal proporcionado no existe en CodigosPostales.';
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Código postal no encontrado.';
     END IF;
 
-    -- Obtener el idPersona vinculado al empleado
-    SELECT idPersona INTO persona_id
-    FROM Empleados
-    WHERE idEmpleado = p_idEmpleado;
+    -- Obtener el idPersona vinculado al cliente
+    SELECT idPersona INTO persona_id FROM Clientes WHERE idCliente = p_idCliente;
 
     -- Obtener idDomicilio actual de la persona
-    SELECT idDomicilio INTO domicilio_id
-    FROM Personas
-    WHERE idPersona = persona_id;
+    SELECT idDomicilio INTO domicilio_id FROM Personas WHERE idPersona = persona_id;
 
     -- Actualizar domicilio con la nueva calle, número y c_CP
     UPDATE Domicilios
@@ -145,29 +139,15 @@ BEGIN
         idDomicilio = domicilio_id
     WHERE idPersona = persona_id;
 
-    -- Actualizar en Empleados (sin contraseña)
-    UPDATE Empleados
-    SET Puesto = p_Puesto,
-        RFC = p_RFC,
-        NumeroSeguroSocial = p_NumeroSeguroSocial,
-        Usuario = p_Usuario
-    WHERE idEmpleado = p_idEmpleado;
-END$$
+    -- Actualizar en Clientes
+    UPDATE Clientes
+    SET Credito = p_Credito,
+        Limite = p_Limite,
+        idDescuento = p_idDescuento
+    WHERE idCliente = p_idCliente;
+END $$
 
-CREATE PROCEDURE EliminarEmpleado (
-    IN p_idEmpleado INT
-)
-BEGIN
-    DECLARE persona_id INT;
-
-    SELECT idPersona INTO persona_id
-    FROM Empleados
-    WHERE idEmpleado = p_idEmpleado;
-
-    UPDATE Personas
-    SET Estatus = 'Inactivo'
-    WHERE idPersona = persona_id;
-END$$
+DELIMITER ;
 
 CREATE PROCEDURE RecuperarEmpleado (
     IN p_idEmpleado INT
@@ -636,6 +616,9 @@ BEGIN
 END$$
 
 --
+DELIMITER $$
+
+DELIMITER $$
 
 CREATE PROCEDURE DevolverProductoIndividual(
     IN p_idVenta INT,
@@ -643,39 +626,90 @@ CREATE PROCEDURE DevolverProductoIndividual(
     IN p_cantidad INT
 )
 BEGIN
-    DECLARE cantidadVendida INT;
+    DECLARE v_cantidadVendida INT DEFAULT 0;
+    DECLARE v_totalProducto DECIMAL(10,2);
+    DECLARE v_ivaProducto DECIMAL(10,2);
+    DECLARE v_iepsProducto DECIMAL(10,2);
+    DECLARE v_cantidadActualVentas INT DEFAULT 0;
 
-    -- Verificar cuántas piezas se vendieron en la venta original
-    SELECT Cantidad INTO cantidadVendida
+    -- Validar existencia del producto en la venta y obtener detalles
+    SELECT Cantidad, Total, IVA, IEPS
+    INTO v_cantidadVendida, v_totalProducto, v_ivaProducto, v_iepsProducto
     FROM DetalleVenta
     WHERE idVenta = p_idVenta AND idProducto = p_idProducto;
 
-    -- Validar que la cantidad a devolver no sea mayor a la vendida
-    IF cantidadVendida IS NULL THEN
+    -- Validaciones
+    IF v_cantidadVendida IS NULL THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El producto no fue encontrado en la venta.';
-    ELSEIF p_cantidad > cantidadVendida THEN
+    ELSEIF p_cantidad <= 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La cantidad a devolver debe ser mayor que cero.';
+    ELSEIF p_cantidad > v_cantidadVendida THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No se puede devolver más de lo vendido.';
     ELSE
-        -- Restar la cantidad devuelta de la venta
+        -- Actualizar la cantidad en DetalleVenta
         UPDATE DetalleVenta
-        SET Cantidad = Cantidad - p_cantidad
+        SET Cantidad = Cantidad - p_cantidad,
+            Total = Total - (v_totalProducto / v_cantidadVendida) * p_cantidad,
+            IVA = IVA - (v_ivaProducto / v_cantidadVendida) * p_cantidad,
+            IEPS = IEPS - (v_iepsProducto / v_cantidadVendida) * p_cantidad
         WHERE idVenta = p_idVenta AND idProducto = p_idProducto;
 
-        -- Si la cantidad en DetalleVenta queda en 0, eliminar el registro
+        -- Eliminar el detalle si la cantidad queda en 0
         DELETE FROM DetalleVenta
         WHERE idVenta = p_idVenta AND idProducto = p_idProducto AND Cantidad = 0;
 
-        -- Devolver al inventario
+        -- Devolver productos al inventario
         UPDATE Productos
-        SET CantidadInventario = CantidadInventario + p_cantidad
+        SET stock = stock + p_cantidad
         WHERE idProducto = p_idProducto;
 
-        -- Registrar en tabla de devoluciones (opcional)
-        INSERT INTO Devoluciones (idVenta, idProducto, Cantidad, FechaDevolucion)
-        VALUES (p_idVenta, p_idProducto, p_cantidad, NOW());
-    END IF;
-END;
+        -- Recalcular cantidad total de productos en la venta
+        SELECT IFNULL(SUM(Cantidad),0)
+        INTO v_cantidadActualVentas
+        FROM DetalleVenta
+        WHERE idVenta = p_idVenta;
 
+        -- Actualizar la cantidad total de productos en Ventas restando la cantidad devuelta
+        UPDATE Ventas
+        SET CantidadProductos = v_cantidadActualVentas
+        WHERE idVenta = p_idVenta;
+
+        -- Recalcular totales de la venta basados en detalles actualizados
+        UPDATE Ventas v
+        JOIN (
+            SELECT 
+                idVenta,
+                IFNULL(SUM(Total), 0) AS nuevo_total,
+                IFNULL(SUM(IVA), 0) AS nuevo_iva,
+                IFNULL(SUM(IEPS), 0) AS nuevo_ieps
+            FROM DetalleVenta
+            WHERE idVenta = p_idVenta
+            GROUP BY idVenta
+        ) dv ON v.idVenta = dv.idVenta
+        SET 
+            v.Subtotal = dv.nuevo_total,
+            v.IVA = dv.nuevo_iva,
+            v.IEPS = dv.nuevo_ieps,
+            v.Monto = dv.nuevo_total + dv.nuevo_iva + dv.nuevo_ieps;
+
+        -- Si ya no quedan productos en la venta, actualizar el estatus y totales a cero
+        IF v_cantidadActualVentas = 0 THEN
+            UPDATE Ventas
+            SET Estatus = 'Cancelada',
+                Subtotal = 0,
+                IVA = 0,
+                IEPS = 0,
+                Monto = 0,
+                CantidadProductos = 0
+            WHERE idVenta = p_idVenta;
+        END IF;
+    END IF;
+END$$
+
+DELIMITER ;
+
+
+DELIMITER $$
 
 CREATE PROCEDURE DevolverVentaCompleta (
     IN p_idVenta INT
@@ -685,8 +719,11 @@ BEGIN
     DECLARE v_idProducto INT;
     DECLARE v_cantidad INT;
 
+    -- Cursor para recorrer los productos de la venta
     DECLARE cur CURSOR FOR
         SELECT idProducto, Cantidad FROM DetalleVenta WHERE idVenta = p_idVenta;
+
+    -- Manejador cuando se terminan los datos del cursor
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
 
     OPEN cur;
@@ -697,7 +734,7 @@ BEGIN
             LEAVE read_loop;
         END IF;
 
-        -- Actualizar stock para cada producto de la venta
+        -- Devolver la cantidad al stock del producto
         UPDATE Productos
         SET stock = stock + v_cantidad
         WHERE idProducto = v_idProducto;
@@ -705,14 +742,25 @@ BEGIN
 
     CLOSE cur;
 
-    -- Eliminar todos los detalles de la venta
+    -- Eliminar los detalles de la venta (productos vendidos)
     DELETE FROM DetalleVenta WHERE idVenta = p_idVenta;
 
-    -- Marcar la venta como devuelta en lugar de eliminarla
+    -- Actualizar la venta: marcar como cancelada y resetear valores
     UPDATE Ventas
-    SET Estatus = 'Devuelta'
+    SET Estatus = 'Cancelada',
+        Monto = 0,
+        Subtotal = 0,
+        IVA = 0,
+        IEPS = 0,
+        CantidadProductos = 0
     WHERE idVenta = p_idVenta;
 END$$
+
+DELIMITER ;
+
+
+DELIMITER ;
+
 
 CREATE PROCEDURE sp_ObtenerCarritoPorEmpleado(IN empleadoId INT)
 BEGIN
