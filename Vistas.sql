@@ -50,14 +50,33 @@ SELECT
     p.Email,
     p.Edad,
     p.Sexo,
-    p.idDomicilio,
+    p.Estatus,
+    
     e.Puesto,
     e.RFC,
     e.NumeroSeguroSocial,
-    e.Usuario
+    e.Usuario,
+
+    dom.Calle,
+    dom.Numero,
+    cp.d_codigo AS CodigoPostal,
+    a.d_asenta AS Asentamiento,
+    m.D_mnpio AS Municipio,
+    ciu.d_ciudad AS Ciudad,
+    est.d_Estado AS Estado,
+    pais.Nombre AS Pais
+
 FROM Empleados e
 JOIN Personas p ON e.idPersona = p.idPersona
+LEFT JOIN Domicilios dom ON p.idDomicilio = dom.idDomicilio
+LEFT JOIN CodigosPostales cp ON dom.c_CP = cp.c_CP
+LEFT JOIN Asentamiento a ON cp.c_tipo_asenta = a.c_tipo_asenta
+LEFT JOIN Municipio m ON a.c_mnpio = m.c_mnpio
+LEFT JOIN Ciudad ciu ON m.c_cve_ciudad = ciu.c_cve_ciudad
+LEFT JOIN Estado est ON ciu.c_estado = est.c_estado
+LEFT JOIN Pais pais ON est.id_Pais = pais.id_Pais
 WHERE p.Estatus = 'Activo';
+
 
 -- 4. VistaEmpleadosInactivos
 CREATE OR REPLACE VIEW VistaEmpleadosInactivos AS
@@ -122,11 +141,29 @@ SELECT
     p.Nombre, p.Paterno, p.Materno,
     p.Email, p.Telefono,
     c.Credito, c.Limite,
-    d.Categoria AS TipoCliente
+    d.Categoria AS TipoCliente,
+    
+    dom.Calle,
+    dom.Numero,
+    cp.d_codigo AS CodigoPostal,
+    a.d_asenta AS Asentamiento,
+    m.D_mnpio AS Municipio,
+    ciu.d_ciudad AS Ciudad,
+    est.d_Estado AS Estado,
+    pais.Nombre AS Pais
+
 FROM Clientes c
 JOIN Personas p ON c.idPersona = p.idPersona
 LEFT JOIN Descuentos d ON c.idDescuento = d.idDescuento
+LEFT JOIN Domicilios dom ON p.idDomicilio = dom.idDomicilio
+LEFT JOIN CodigosPostales cp ON dom.c_CP = cp.c_CP
+LEFT JOIN Asentamiento a ON cp.c_tipo_asenta = a.c_tipo_asenta
+LEFT JOIN Municipio m ON a.c_mnpio = m.c_mnpio
+LEFT JOIN Ciudad ciu ON m.c_cve_ciudad = ciu.c_cve_ciudad
+LEFT JOIN Estado est ON ciu.c_estado = est.c_estado
+LEFT JOIN Pais pais ON est.id_Pais = pais.id_Pais
 WHERE p.Estatus = 'Activo';
+
 
 -- 7. VistaClientesInactivo
 CREATE OR REPLACE VIEW VistaClientesInactivos AS
@@ -135,11 +172,29 @@ SELECT
     p.Nombre, p.Paterno, p.Materno,
     p.Email, p.Telefono,
     c.Credito, c.Limite,
-    d.Categoria AS TipoCliente
+    d.Categoria AS TipoCliente,
+    
+    dom.Calle,
+    dom.Numero,
+    cp.d_codigo AS CodigoPostal,
+    a.d_asenta AS Asentamiento,
+    m.D_mnpio AS Municipio,
+    ciu.d_ciudad AS Ciudad,
+    est.d_Estado AS Estado,
+    pais.Nombre AS Pais
+
 FROM Clientes c
 JOIN Personas p ON c.idPersona = p.idPersona
 LEFT JOIN Descuentos d ON c.idDescuento = d.idDescuento
+LEFT JOIN Domicilios dom ON p.idDomicilio = dom.idDomicilio
+LEFT JOIN CodigosPostales cp ON dom.c_CP = cp.c_CP
+LEFT JOIN Asentamiento a ON cp.c_tipo_asenta = a.c_tipo_asenta
+LEFT JOIN Municipio m ON a.c_mnpio = m.c_mnpio
+LEFT JOIN Ciudad ciu ON m.c_cve_ciudad = ciu.c_cve_ciudad
+LEFT JOIN Estado est ON ciu.c_estado = est.c_estado
+LEFT JOIN Pais pais ON est.id_Pais = pais.id_Pais
 WHERE p.Estatus = 'Inactivo';
+
 
 -- Vista para Pedidos Pendientes
 CREATE OR REPLACE VIEW VistaPedidosPendientes AS
@@ -249,3 +304,24 @@ FROM
     CodigosPostales cp
 JOIN 
     Asentamiento a ON cp.c_tipo_asenta = a.c_tipo_asenta;
+
+
+CREATE VIEW VistaHistorialModificaciones AS
+SELECT 
+    h.idHistorial,
+    h.Movimiento,
+    h.TablaAfectada,
+    h.ColumnaAfectada,
+    h.DatoAnterior,
+    h.DatoNuevo,
+    h.Fecha,
+    h.Hora,
+    e.idEmpleado,
+    CONCAT(p.Nombre, ' ', p.Paterno, ' ', p.Materno) AS NombreEmpleado,
+    e.Puesto
+FROM 
+    HistorialModificaciones h
+JOIN 
+    Empleados e ON h.idEmpleado = e.idEmpleado
+JOIN 
+    Personas p ON e.idPersona = p.idPersona;
